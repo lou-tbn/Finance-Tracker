@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
             throw new UsernameAlreadyExistException(newUsername);
         }
         if (repository.existsByEmail(newEmail) && !newEmail.equalsIgnoreCase(user.getEmail())) {
-            throw new UsernameAlreadyExistException(newEmail);
+            throw new EmailAlreadyExistException(newEmail);
         }
         user.setUsername(newUsername);
         user.setEmail(newEmail);
@@ -76,7 +76,7 @@ public class UserServiceImpl implements UserService {
         }
         if(newEmail != null) {
             if (repository.existsByEmail(newEmail) && !newEmail.equalsIgnoreCase(user.getEmail())) {
-                throw new UsernameAlreadyExistException(newEmail);
+                throw new EmailAlreadyExistException(newEmail);
             }
             user.setEmail(newEmail);
         }

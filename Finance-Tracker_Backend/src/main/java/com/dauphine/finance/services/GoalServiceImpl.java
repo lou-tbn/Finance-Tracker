@@ -31,6 +31,13 @@ public class GoalServiceImpl implements GoalService {
     }
 
     @Override
+    public List<Goal> getAllByUserId(UUID userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundByIdException(userId));
+        return repository.findAllByUserId(userId);
+    }
+
+    @Override
     public List<Goal> getAllLikeTitle(String title){
         return repository.findAllLikeTitle(title);
     }
@@ -40,12 +47,14 @@ public class GoalServiceImpl implements GoalService {
         return repository.findById(id)
                 .orElseThrow(() -> new GoalNotFoundByIdException(id));
     }
+
     @Override
-    public Goal create(UUID userId, String title, BigDecimal targetAmount, BigDecimal currentAmount, LocalDateTime deadline){
+    public Goal create(UUID userId, String title, BigDecimal targetAmount, BigDecimal currentAmount, LocalDateTime deadline) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByIdException(userId));
 
-        Goal goal = new Goal(user, title, targetAmount, currentAmount, deadline);
+        BigDecimal initialAmount = currentAmount != null ? currentAmount : BigDecimal.ZERO;  // ✅
+        Goal goal = new Goal(user, title, targetAmount, initialAmount, deadline);
         return repository.save(goal);
     }
 

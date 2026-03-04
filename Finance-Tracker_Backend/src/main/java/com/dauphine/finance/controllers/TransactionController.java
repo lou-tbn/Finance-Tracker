@@ -2,6 +2,7 @@ package com.dauphine.finance.controllers;
 
 import com.dauphine.finance.DTO.TransactionRequest;
 import com.dauphine.finance.model.Transaction;
+import com.dauphine.finance.model.TransactionType;
 import com.dauphine.finance.services.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,7 +11,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,20 +27,43 @@ public class TransactionController {
 
     private final TransactionService service;
 
-    public TransactionController(TransactionService service){
+    public TransactionController(TransactionService service) {
         this.service = service;
     }
 
     @GetMapping
     @Operation(
             summary = "Get all transactions",
-            description = "Retrieve all transactions or filter like name"
+            description = "Retrieve transactions with optional filters (userId, categoryId, date range, amount range, type)"
     )
-    public ResponseEntity<List<Transaction>> getAll(){
+    public ResponseEntity<List<Transaction>> getAll(
+            @RequestParam(required = false) UUID userId,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) LocalDateTime start,
+            @RequestParam(required = false) LocalDateTime end,
+            @RequestParam(required = false) BigDecimal minAmount,
+            @RequestParam(required = false) BigDecimal maxAmount,
+            @RequestParam(required = false) TransactionType transactionType
+    ) {
+        if (userId != null && categoryId != null) {
+            return ResponseEntity.ok(service.getAllByUserIdAndCategoryId(userId, categoryId));
+        }
+        if (userId != null && start != null && end != null) {
+            return ResponseEntity.ok(service.getAllByUserIdAndDateBetween(userId, start, end));
+        }
+        if (userId != null && minAmount != null && maxAmount != null) {
+            return ResponseEntity.ok(service.getAllByUserIdAndAmountBetween(userId, minAmount, maxAmount));
+        }
+        if (userId != null && transactionType != null) {
+            return ResponseEntity.ok(service.getAllByUserIdAndTransactionType(userId, transactionType));
+        }
+        if (userId != null) {
+            return ResponseEntity.ok(service.getAllByUserId(userId));
+        }
         return ResponseEntity.ok(service.getAll());
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     @Operation(
             summary = "Get transaction by id",
             description = "Retrieve a transaction with {id} by path variable"
@@ -45,42 +71,81 @@ public class TransactionController {
     public ResponseEntity<Transaction> getTransactionById(
             @Parameter(description = "Transaction's id")
             @PathVariable UUID id
-    ){
-        Transaction transaction = service.getById(id);
-        return ResponseEntity.ok(transaction);
+    ) {
+        return ResponseEntity.ok(service.getById(id));
     }
 
-    @PostMapping()
+    @PostMapping
     @Operation(
-            summary = "Creat a new transaction",
-            description = "Creat a new transaction, only require field name of the transaction to create"
+            summary = "Create a new transaction",
+            description = "Create a new transaction with user, category, amount, date, frequency, description and type"
     )
-    public ResponseEntity<Transaction> CreatTransaction(@Valid @RequestBody TransactionRequest request){
-        Transaction transaction = service.create(request.getUser(), request.getAmount(), request.getDate(), request.getFrequency(), request.getDescription(), request.getTransactionType());
+    public ResponseEntity<Transaction> createTransaction(@Valid @RequestBody TransactionRequest request) {
+        Transaction transaction = service.create(
+                request.getUserId(),
+                request.getCategoryId(),
+                request.getAmount(),
+                request.getDate(),
+                request.getFrequency(),
+                request.getDescription(),
+                request.getTransactionType()
+        );
         return ResponseEntity
                 .created(URI.create("/v1/transactions/" + transaction.getId()))
                 .body(transaction);
     }
 
-
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     @Operation(
             summary = "Update a Transaction",
-            description =  "Update the name of a transaction identified by {id}"
+            description = "Update all fields of a transaction identified by {id}"
     )
-    public ResponseEntity<Transaction> updateTransaction(@PathVariable UUID id, @RequestBody TransactionRequest request){
-        Transaction updatedTransaction = service.update(id, request.getUser(), request.getAmount(), request.getDate(), request.getFrequency(), request.getDescription(), request.getTransactionType());
-        return ResponseEntity.ok(updatedTransaction);
+    public ResponseEntity<Transaction> updateTransaction(
+            @PathVariable UUID id,
+            @Valid @RequestBody TransactionRequest request
+    ) {
+        Transaction updated = service.update(
+                id,
+                request.getUserId(),
+                request.getCategoryId(),
+                request.getAmount(),
+                request.getDate(),
+                request.getFrequency(),
+                request.getDescription(),
+                request.getTransactionType()
+        );
+        return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("{id}")
+    @PatchMapping("/{id}")
+    @Operation(
+            summary = "Patch a Transaction",
+            description = "Partially update a transaction identified by {id}"
+    )
+    public ResponseEntity<Transaction> patchTransaction(
+            @PathVariable UUID id,
+            @RequestBody TransactionRequest request
+    ) {
+        Transaction patched = service.patch(
+                id,
+                request.getUserId(),
+                request.getCategoryId(),
+                request.getAmount(),
+                request.getDate(),
+                request.getFrequency(),
+                request.getDescription(),
+                request.getTransactionType()
+        );
+        return ResponseEntity.ok(patched);
+    }
+
+    @DeleteMapping("/{id}")
     @Operation(
             summary = "Delete a Transaction",
-            description = "Delete a Transaction by {id}"
+            description = "Delete a transaction identified by {id}"
     )
-    public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id){
+    public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-
 }

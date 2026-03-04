@@ -76,6 +76,18 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @PatchMapping("/{id}")
+    @Operation(summary = "Patch a User", description = "Partially update a user identified by {id}")
+    public ResponseEntity<User> patchUser(@PathVariable UUID id, @RequestBody UserRequest request) {
+        User patched = service.patch(
+                id,
+                request.getUsername(),
+                request.getEmail(),
+                request.getPassword()
+        );
+        return ResponseEntity.ok(patched);
+    }
+
     @DeleteMapping("{id}")
     @Operation(
             summary = "Delete a User",

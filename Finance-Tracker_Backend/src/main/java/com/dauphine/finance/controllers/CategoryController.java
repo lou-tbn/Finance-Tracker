@@ -76,6 +76,17 @@ public class CategoryController {
         return ResponseEntity.ok(updatedCategory);
     }
 
+    @PatchMapping("/{id}")
+    @Operation(summary = "Patch a Category", description = "Partially update a category identified by {id}")
+    public ResponseEntity<Category> patchCategory(@PathVariable UUID id, @RequestBody CategoryRequest request) {
+        Category patched = service.patch(
+                id,
+                request.getName(),
+                request.getCategoryType()
+        );
+        return ResponseEntity.ok(patched);
+    }
+
     @DeleteMapping("{id}")
     @Operation(
             summary = "Delete a Category",

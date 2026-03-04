@@ -16,4 +16,10 @@ public interface GoalRepository extends JpaRepository<Goal, UUID> {
             """)
     List<Goal> findAllLikeTitle(@Param("title") String title);
 
+    @Query("""
+        SELECT g 
+        FROM Goal g 
+        WHERE g.user.id = :userId
+    """)
+    List<Goal> findAllByUserId(@Param("userId") UUID userId);
 }

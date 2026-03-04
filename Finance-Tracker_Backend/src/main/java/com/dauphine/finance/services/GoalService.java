@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface GoalService {
     List<Goal> getAll();
 
+    List<Goal> getAllByUserId(UUID userId);
+
     List<Goal> getAllLikeTitle(String title);
 
     Goal getById(UUID id);

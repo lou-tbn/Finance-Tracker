@@ -1,11 +1,10 @@
 package com.dauphine.finance.services;
 
+import com.dauphine.finance.exceptions.CategoryNotFoundByIdException;
 import com.dauphine.finance.exceptions.TransactionNotFoundByIdException;
 import com.dauphine.finance.exceptions.UserNotFoundByIdException;
-import com.dauphine.finance.model.Frequency;
-import com.dauphine.finance.model.Transaction;
-import com.dauphine.finance.model.TransactionType;
-import com.dauphine.finance.model.User;
+import com.dauphine.finance.model.*;
+import com.dauphine.finance.repository.CategoryRepository;
 import com.dauphine.finance.repository.TransactionRepository;
 import com.dauphine.finance.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -18,40 +17,87 @@ import java.util.UUID;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-
     private final TransactionRepository repository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
-    public TransactionServiceImpl(TransactionRepository repository, UserRepository userRepository){
+    public TransactionServiceImpl(TransactionRepository repository, UserRepository userRepository, CategoryRepository categoryRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
-    public List<Transaction> getAll(){
+    public List<Transaction> getAll() {
         return repository.findAll();
     }
 
     @Override
-    public Transaction getById(UUID id) throws TransactionNotFoundByIdException {
+    public List<Transaction> getAllByUserId(UUID userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundByIdException(userId));
+        return repository.findAllByUserId(userId);
+    }
+
+    @Override
+    public List<Transaction> getAllByUserIdAndCategoryId(UUID userId, UUID categoryId) {
+        return repository.findAllByUserIdAndCategoryId(userId, categoryId);
+    }
+
+    @Override
+    public List<Transaction> getAllByUserIdAndDateBetween(UUID userId, LocalDateTime start, LocalDateTime end) {
+        return repository.findAllByUserIdAndDateBetween(userId, start, end);
+    }
+
+    @Override
+    public List<Transaction> getAllByUserIdAndAmountBetween(UUID userId, BigDecimal min, BigDecimal max) {
+        return repository.findAllByUserIdAndAmountBetween(userId, min, max);
+    }
+
+    @Override
+    public List<Transaction> getAllByUserIdAndTransactionType(UUID userId, TransactionType type) {
+        return repository.findAllByUserIdAndTransactionType(userId, type);
+    }
+
+
+    @Override
+    public Transaction getById(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new TransactionNotFoundByIdException(id));
     }
+
     @Override
-    public Transaction create(UUID userId, BigDecimal amount, LocalDateTime date, Frequency frequency, String description, TransactionType transactionType){
+    public Transaction create(UUID userId, UUID categoryId, BigDecimal amount, LocalDateTime date, Frequency frequency, String description, TransactionType transactionType) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundByIdException(userId));;
+                .orElseThrow(() -> new UserNotFoundByIdException(userId));
+
+        Category category = null;
+        if (categoryId != null) {
+            category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new CategoryNotFoundByIdException(categoryId));
+        }
+
         Transaction transaction = new Transaction(user, amount, date, frequency, description, transactionType);
+        transaction.setCategory(category);
         return repository.save(transaction);
     }
 
     @Override
-    public Transaction update(UUID id, UUID newUserId, BigDecimal newAmount, LocalDateTime newDate, Frequency newFrequency, String newDescription, TransactionType newTransactionType){
+    public Transaction update(UUID id, UUID newUserId, UUID newCategoryId, BigDecimal newAmount, LocalDateTime newDate, Frequency newFrequency, String newDescription, TransactionType newTransactionType) {
         Transaction transaction = getById(id);
+
         User user = userRepository.findById(newUserId)
-                .orElseThrow(() -> new UserNotFoundByIdException(newUserId));;
-        
+                .orElseThrow(() -> new UserNotFoundByIdException(newUserId));
         transaction.setUser(user);
+
+        if (newCategoryId != null) {
+            Category category = categoryRepository.findById(newCategoryId)
+                    .orElseThrow(() -> new CategoryNotFoundByIdException(newCategoryId));
+            transaction.setCategory(category);
+        } else {
+            transaction.setCategory(null);
+        }
+
         transaction.setAmount(newAmount);
         transaction.setDate(newDate);
         transaction.setFrequency(newFrequency);
@@ -62,27 +108,32 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Transaction patch(UUID id, UUID newUserId, BigDecimal newAmount, LocalDateTime newDate, Frequency newFrequency, String newDescription, TransactionType newTransactionType){
+    public Transaction patch(UUID id, UUID newUserId, UUID newCategoryId, BigDecimal newAmount, LocalDateTime newDate, Frequency newFrequency, String newDescription, TransactionType newTransactionType) {
         Transaction transaction = getById(id);
-        
-        if (newUserId != null){
+
+        if (newUserId != null) {
             User user = userRepository.findById(newUserId)
                     .orElseThrow(() -> new UserNotFoundByIdException(newUserId));
             transaction.setUser(user);
         }
-        if(newAmount != null) {
+        if (newCategoryId != null) {
+            Category category = categoryRepository.findById(newCategoryId)
+                    .orElseThrow(() -> new CategoryNotFoundByIdException(newCategoryId));
+            transaction.setCategory(category);
+        }
+        if (newAmount != null) {
             transaction.setAmount(newAmount);
         }
-        if(newDate != null){
+        if (newDate != null) {
             transaction.setDate(newDate);
         }
-        if(newFrequency != null){
+        if (newFrequency != null) {
             transaction.setFrequency(newFrequency);
         }
-        if(newDescription != null){
+        if (newDescription != null) {
             transaction.setDescription(newDescription);
         }
-        if(newTransactionType!= null){
+        if (newTransactionType != null) {
             transaction.setTransactionType(newTransactionType);
         }
 
@@ -90,9 +141,8 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public void deleteById(UUID id){
+    public void deleteById(UUID id) {
         Transaction transaction = getById(id);
         repository.delete(transaction);
     }
-
 }

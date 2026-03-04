@@ -27,5 +27,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
         Select Exists (Select c from User c Where UPPER(c.email) = UPPER(:email))
     """
     )
-    boolean existsByEmail(@Param("email") String emails);
+    boolean existsByEmail(@Param("email") String email);
 }

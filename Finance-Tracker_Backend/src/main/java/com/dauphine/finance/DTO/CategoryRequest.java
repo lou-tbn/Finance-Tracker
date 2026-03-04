@@ -5,13 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class CategoryRequest {
-    private String name;
-    private CategoryType categoryType;
 
     @NotBlank
-    public String getName() { return name; }
+    private String name;
 
     @NotNull
+    private CategoryType categoryType;
+
+    public String getName() { return name; }
+
     public CategoryType getCategoryType() { return categoryType; }
 
     public void setName(String name) { this.name = name; }

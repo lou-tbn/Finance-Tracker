@@ -1,20 +1,18 @@
 package com.dauphine.finance.DTO;
 
-import com.dauphine.finance.model.User;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class GoalRequest {
-    private UUID user;
+    private UUID userId;
     private String title;
     private BigDecimal targetAmount;
     private BigDecimal currentAmount;
     private LocalDateTime deadline;
 
-    public UUID getUser() {
-        return user;
+    public UUID getUserId() {
+        return userId;
     }
     public String getTitle() {
         return title;
@@ -30,8 +28,8 @@ public class GoalRequest {
     }
 
 
-    public void setUser(UUID user) {
-        this.user = user;
+    public void setUserId(UUID user) {
+        this.userId = user;
     }
     public void setTitle(String title) {
         this.title = title;

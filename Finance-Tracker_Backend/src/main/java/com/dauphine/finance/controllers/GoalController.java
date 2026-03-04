@@ -31,9 +31,15 @@ public class GoalController {
     @GetMapping
     @Operation(
             summary = "Get all goals",
-            description = "Retrieve all goals or filter like name"
+            description = "Retrieve all goals, filter by title or by userId"
     )
-    public ResponseEntity<List<Goal>> getAll(@RequestParam(required = false) String title){
+    public ResponseEntity<List<Goal>> getAll(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) UUID userId
+    ) {
+        if (userId != null) {
+            return ResponseEntity.ok(service.getAllByUserId(userId));
+        }
         List<Goal> goals = title == null || title.isBlank()
                 ? service.getAll()
                 : service.getAllLikeTitle(title);
@@ -59,7 +65,7 @@ public class GoalController {
             description = "Creat a new goal, only require field name of the goal to create"
     )
     public ResponseEntity<Goal> CreatGoal(@Valid @RequestBody GoalRequest request){
-        Goal goal = service.create(request.getUser(), request.getTitle(), request.getTargetAmount(), request.getCurrentAmount(), request.getDeadline());
+        Goal goal = service.create(request.getUserId(), request.getTitle(), request.getTargetAmount(), request.getCurrentAmount(), request.getDeadline());
         return ResponseEntity
                 .created(URI.create("/v1/goals/" + goal.getId()))
                 .body(goal);
@@ -72,8 +78,22 @@ public class GoalController {
             description =  "Update the name of a goal identified by {id}"
     )
     public ResponseEntity<Goal> updateGoal(@PathVariable UUID id, @RequestBody GoalRequest request){
-        Goal updatedGoal = service.update(id, request.getUser(), request.getTitle(), request.getTargetAmount(), request.getCurrentAmount(), request.getDeadline());
+        Goal updatedGoal = service.update(id, request.getUserId(), request.getTitle(), request.getTargetAmount(), request.getCurrentAmount(), request.getDeadline());
         return ResponseEntity.ok(updatedGoal);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Patch a Goal")
+    public ResponseEntity<Goal> patchGoal(@PathVariable UUID id, @RequestBody GoalRequest request) {
+        Goal patched = service.patch(
+                id,
+                request.getUserId(),
+                request.getTitle(),
+                request.getTargetAmount(),
+                request.getCurrentAmount(),
+                request.getDeadline()
+        );
+        return ResponseEntity.ok(patched);
     }
 
     @DeleteMapping("{id}")
