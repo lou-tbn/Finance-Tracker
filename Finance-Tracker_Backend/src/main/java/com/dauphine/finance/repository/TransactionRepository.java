@@ -27,4 +27,31 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
 
     @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.transactionType = :type")
     List<Transaction> findAllByUserIdAndTransactionType(@Param("userId") UUID userId, @Param("type") TransactionType type);
+
+    @Query("""
+        SELECT SUM(t.amount) FROM Transaction t
+        WHERE t.user.id = :userId
+        AND t.transactionType = 'INCOME'
+        AND MONTH(t.date) = :month
+        AND YEAR(t.date) = :year
+    """)
+    BigDecimal sumIncomeByUserAndMonth(@Param("userId") UUID userId, @Param("month") int month, @Param("year") int year);
+
+    @Query("""
+        SELECT SUM(t.amount) FROM Transaction t
+        WHERE t.user.id = :userId
+        AND t.transactionType = 'EXPENSE'
+        AND MONTH(t.date) = :month
+        AND YEAR(t.date) = :year
+    """)
+    BigDecimal sumExpenseByUserAndMonth(@Param("userId") UUID userId, @Param("month") int month, @Param("year") int year);
+
+    @Query("""
+        SELECT t.category.name, SUM(t.amount) FROM Transaction t
+        WHERE t.user.id = :userId
+        AND t.transactionType = 'EXPENSE'
+        AND t.category IS NOT NULL
+        GROUP BY t.category.name
+    """)
+    List<Object[]> sumExpensesByCategoryForUser(@Param("userId") UUID userId);
 }
