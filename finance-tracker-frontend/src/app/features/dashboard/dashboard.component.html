@@ -1,0 +1,103 @@
+<div class="container py-4">
+  <h1 class="mb-4">Finance Tracker Dashboard</h1>
+
+  <form class="row g-2 align-items-end mb-4" (ngSubmit)="loadDashboard()">
+    <div class="col-12 col-md-6">
+      <label for="userId" class="form-label">User ID (UUID)</label>
+      <input
+        id="userId"
+        class="form-control"
+        type="text"
+        [(ngModel)]="userId"
+        name="userId"
+        placeholder="Enter a user UUID"
+      />
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" type="submit">
+        Load dashboard
+      </button>
+    </div>
+  </form>
+
+  <div *ngIf="loading" class="alert alert-info">
+    Loading dashboard...
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="data" class="row g-3">
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">This month</h5>
+          <p class="mb-1">
+            <strong>Income:</strong>
+            {{ data.totalIncomeThisMonth | number: '1.2-2' }}
+          </p>
+          <p class="mb-1">
+            <strong>Expense:</strong>
+            {{ data.totalExpenseThisMonth | number: '1.2-2' }}
+          </p>
+          <p class="mb-0">
+            <strong>Balance:</strong>
+            {{ data.balance | number: '1.2-2' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Expenses by category</h5>
+          <p *ngIf="!data.expensesByCategory.length" class="text-muted">
+            No expenses yet.
+          </p>
+          <ul class="list-group list-group-flush" *ngIf="data.expensesByCategory.length">
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+              *ngFor="let e of data.expensesByCategory"
+            >
+              <span>{{ e.categoryName }}</span>
+              <span class="fw-semibold">
+                {{ e.total | number: '1.2-2' }}
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Savings goals</h5>
+          <p *ngIf="!data.goalProgresses.length" class="text-muted">
+            No goals defined.
+          </p>
+          <div *ngFor="let g of data.goalProgresses" class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold">{{ g.title }}</span>
+              <span>{{ g.progressPercentage | number: '1.0-0' }}%</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div
+                class="progress-bar"
+                role="progressbar"
+                [style.width.%]="g.progressPercentage"
+              ></div>
+            </div>
+            <small class="text-muted">
+              {{ g.currentAmount | number: '1.2-2' }} /
+              {{ g.targetAmount | number: '1.2-2' }}
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

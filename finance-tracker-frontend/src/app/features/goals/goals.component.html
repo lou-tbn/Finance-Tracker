@@ -1,0 +1,101 @@
+<div class="container py-4">
+  <h2 class="mb-3">Goals</h2>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Nouvel objectif</h5>
+      <form class="row g-2" (ngSubmit)="createGoal()">
+        <div class="col-12 col-md-4">
+          <label class="form-label">User ID *</label>
+          <input class="form-control" [(ngModel)]="form.userId" name="createUserId" required />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">Titre *</label>
+          <input class="form-control" [(ngModel)]="form.title" name="createTitle" required />
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">Cible *</label>
+          <input
+            class="form-control"
+            type="number"
+            min="0.01"
+            step="0.01"
+            [(ngModel)]="form.targetAmount"
+            name="createTargetAmount"
+            required
+          />
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">Actuel</label>
+          <input
+            class="form-control"
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="form.currentAmount"
+            name="createCurrentAmount"
+          />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">Deadline</label>
+          <input
+            class="form-control"
+            type="datetime-local"
+            [(ngModel)]="form.deadline"
+            name="createDeadline"
+          />
+        </div>
+        <div class="col-12 col-md-2">
+          <button class="btn btn-primary w-100" type="submit">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+        <div>
+          <label class="form-label">Filtre userId</label>
+          <input class="form-control" [(ngModel)]="filterUserId" name="filterUserId" />
+        </div>
+        <div>
+          <label class="form-label">Filtre titre</label>
+          <input class="form-control" [(ngModel)]="filterTitle" name="filterTitle" />
+        </div>
+        <button class="btn btn-outline-primary" (click)="loadGoals()">Filtrer</button>
+      </div>
+
+      <div *ngIf="loading" class="alert alert-info">Chargement...</div>
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <div class="row g-3" *ngIf="!loading">
+        <div class="col-12 col-md-6 col-lg-4" *ngFor="let g of goals">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <h6 class="card-title mb-1">{{ g.title }}</h6>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteGoal(g.id)">
+                  Supprimer
+                </button>
+              </div>
+              <p class="mb-1">
+                <strong>Objectif:</strong> {{ g.targetAmount | number: '1.2-2' }}
+              </p>
+              <p class="mb-2">
+                <strong>Actuel:</strong> {{ g.currentAmount | number: '1.2-2' }}
+              </p>
+              <div class="progress mb-2" style="height: 7px;">
+                <div class="progress-bar" [style.width.%]="getProgress(g)"></div>
+              </div>
+              <small class="text-muted" *ngIf="g.deadline">
+                Deadline: {{ g.deadline | date: 'medium' }}
+              </small>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!goals.length" class="col-12 text-center text-muted">Aucun objectif.</div>
+      </div>
+    </div>
+  </div>
+</div>

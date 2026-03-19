@@ -1,0 +1,65 @@
+<div class="container py-4">
+  <h2 class="mb-3">Categories</h2>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Nouvelle categorie</h5>
+      <form class="row g-2 align-items-end" (ngSubmit)="createCategory()">
+        <div class="col-12 col-md-6">
+          <label class="form-label">Nom *</label>
+          <input class="form-control" [(ngModel)]="form.name" name="createName" required />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">Type *</label>
+          <select class="form-select" [(ngModel)]="form.categoryType" name="createType">
+            <option *ngFor="let t of categoryTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-2">
+          <button class="btn btn-primary w-100" type="submit">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+        <div>
+          <label class="form-label">Filtrer par nom</label>
+          <input class="form-control" [(ngModel)]="searchName" name="searchName" />
+        </div>
+        <button class="btn btn-outline-primary" (click)="loadCategories()">Filtrer</button>
+      </div>
+
+      <div *ngIf="loading" class="alert alert-info">Chargement...</div>
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Type</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of categories">
+              <td>{{ c.name }}</td>
+              <td>{{ c.categoryType }}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(c.id)">
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="!categories.length">
+              <td colspan="3" class="text-center text-muted">Aucune categorie.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
