@@ -34,7 +34,6 @@ public class DashboardServiceImpl implements DashboardService {
         int month = LocalDateTime.now().getMonthValue();
         int year = LocalDateTime.now().getYear();
 
-        // Revenus et dépenses du mois
         BigDecimal totalIncome = transactionRepository.sumIncomeByUserAndMonth(userId, month, year);
         BigDecimal totalExpense = transactionRepository.sumExpenseByUserAndMonth(userId, month, year);
 
@@ -43,7 +42,6 @@ public class DashboardServiceImpl implements DashboardService {
 
         BigDecimal balance = totalIncome.subtract(totalExpense);
 
-        // Dépenses par catégorie
         List<Object[]> rawExpenses = transactionRepository.sumExpensesByCategoryForUser(userId);
         List<DashboardResponse.CategoryExpense> expensesByCategory = rawExpenses.stream()
                 .map(row -> new DashboardResponse.CategoryExpense(
@@ -52,7 +50,6 @@ public class DashboardServiceImpl implements DashboardService {
                 ))
                 .toList();
 
-        // Progression des goals
         List<Goal> goals = goalRepository.findAllByUserId(userId);
         List<DashboardResponse.GoalProgress> goalProgresses = goals.stream()
                 .map(g -> new DashboardResponse.GoalProgress(

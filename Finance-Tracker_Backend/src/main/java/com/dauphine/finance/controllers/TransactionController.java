@@ -75,6 +75,16 @@ public class TransactionController {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    @PostMapping("/generate-recurring/{userId}")
+    @Operation(
+            summary = "Generate recurring transactions",
+            description = "Generates this month's transactions from recurring templates for a given user"
+        )
+     public ResponseEntity<List<Transaction>> generateRecurring(@PathVariable UUID userId) {
+            List<Transaction> generated = service.generateRecurringTransactions(userId);
+            return ResponseEntity.ok(generated);
+        }
+
     @PostMapping
     @Operation(
             summary = "Create a new transaction",

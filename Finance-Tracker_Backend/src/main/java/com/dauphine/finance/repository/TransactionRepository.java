@@ -16,6 +16,26 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId")
     List<Transaction> findAllByUserId(@Param("userId") UUID userId);
 
+    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.isTemplate = true")
+    List<Transaction> findAllTemplatesByUserId(@Param("userId") UUID userId);
+
+    @Query("""
+        SELECT COUNT(t) > 0 FROM Transaction t
+        WHERE t.user.id = :userId
+        AND t.description = :description
+        AND t.amount = :amount
+        AND MONTH(t.date) = :month
+        AND YEAR(t.date) = :year
+        AND t.isTemplate = false
+    """)
+    boolean existsGeneratedTransactionThisMonth(
+        @Param("userId") UUID userId,
+        @Param("description") String description,
+        @Param("amount") BigDecimal amount,
+        @Param("month") int month,
+        @Param("year") int year
+    );
+
     @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.category.id = :categoryId")
     List<Transaction> findAllByUserIdAndCategoryId(@Param("userId") UUID userId, @Param("categoryId") UUID categoryId);
 

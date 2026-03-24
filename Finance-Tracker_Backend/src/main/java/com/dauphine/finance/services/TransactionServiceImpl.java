@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,6 +43,45 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<Transaction> getAllByUserIdAndCategoryId(UUID userId, UUID categoryId) {
         return repository.findAllByUserIdAndCategoryId(userId, categoryId);
+    }
+
+    @Override
+    public List<Transaction> generateRecurringTransactions(UUID userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundByIdException(userId));
+
+        int month = LocalDateTime.now().getMonthValue();
+        int year = LocalDateTime.now().getYear();
+
+        List<Transaction> templates = repository.findAllTemplatesByUserId(userId);
+        List<Transaction> generated = new ArrayList<>();
+
+        for (Transaction template : templates) {
+            // Vérifier si déjà générée ce mois-ci
+            boolean alreadyGenerated = repository.existsGeneratedTransactionThisMonth(
+                    userId,
+                    template.getDescription(),
+                    template.getAmount(),
+                    month,
+                    year
+            );
+
+            if (!alreadyGenerated) {
+                Transaction newTransaction = new Transaction(
+                        template.getUser(),
+                        template.getAmount(),
+                        LocalDateTime.now(),
+                        template.getFrequency(),
+                        template.getDescription(),
+                        template.getTransactionType()
+                );
+                newTransaction.setCategory(template.getCategory());
+                newTransaction.setIsTemplate(false);  // c'est une occurrence, pas un template
+                generated.add(repository.save(newTransaction));
+            }
+        }
+
+        return generated;
     }
 
     @Override

@@ -15,6 +15,8 @@ public interface TransactionService {
 
     List<Transaction> getAllByUserIdAndDateBetween(UUID userId, LocalDateTime start, LocalDateTime end);
 
+    List<Transaction> generateRecurringTransactions(UUID userId);
+
     List<Transaction> getAllByUserIdAndAmountBetween(UUID userId, BigDecimal min, BigDecimal max);
 
     List<Transaction> getAllByUserIdAndTransactionType(UUID userId, TransactionType type);

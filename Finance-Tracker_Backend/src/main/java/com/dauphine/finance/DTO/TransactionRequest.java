@@ -14,6 +14,8 @@ public class TransactionRequest {
     @NotNull
     private UUID userId;
 
+    private boolean isTemplate = false;
+
     private UUID categoryId;  // optionnel, une transaction peut ne pas avoir de catégorie
 
     @NotNull
@@ -31,6 +33,7 @@ public class TransactionRequest {
     private TransactionType transactionType;
 
     public UUID getUserId() { return userId; }
+    public boolean isTemplate() { return isTemplate; }
     public UUID getCategoryId() { return categoryId; }
     public BigDecimal getAmount() { return amount; }
     public LocalDateTime getDate() { return date; }
@@ -39,6 +42,7 @@ public class TransactionRequest {
     public TransactionType getTransactionType() { return transactionType; }
 
     public void setUserId(UUID userId) { this.userId = userId; }
+    public void setTemplate(boolean isTemplate) { this.isTemplate = isTemplate; }
     public void setCategoryId(UUID categoryId) { this.categoryId = categoryId; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
     public void setDate(LocalDateTime date) { this.date = date; }

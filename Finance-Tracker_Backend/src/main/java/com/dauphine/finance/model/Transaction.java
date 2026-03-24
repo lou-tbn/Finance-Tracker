@@ -14,6 +14,9 @@ public class Transaction {
     @Column(name = "id")
     private UUID id;
 
+    @Column(name = "is_template", nullable = false)
+    private boolean isTemplate = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -56,6 +59,14 @@ public class Transaction {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public boolean getIsTemplate(){
+        return this.isTemplate;
+    }
+
+    public void setIsTemplate(boolean isTemplate){
+        this.isTemplate = isTemplate;
     }
 
     public User getUser() {
