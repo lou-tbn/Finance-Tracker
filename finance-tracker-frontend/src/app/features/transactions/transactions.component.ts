@@ -1,16 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Category } from '../../core/models/category.model';
 import {
   Frequency,
   Transaction,
+  TransactionFilters,
   TransactionRequest,
   TransactionType,
 } from '../../core/models/transaction.model';
 import { CategoryService } from '../../core/services/category.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AlertService } from '../../core/services/alert.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-transactions',
@@ -23,13 +26,24 @@ export class TransactionsComponent implements OnInit {
   private readonly transactionService = inject(TransactionService);
   private readonly categoryService = inject(CategoryService);
   private readonly authService = inject(AuthService);
+  private readonly alertService = inject(AlertService);
+  private readonly destroyRef = inject(DestroyRef);
 
   loading = false;
   error: string | null = null;
   transactions: Transaction[] = [];
   categories: Category[] = [];
 
+  showAddForm = false;
+  showFilters = false;
+
   filterUserId = '';
+  filterCategoryId = '';
+  filterStart = '';
+  filterEnd = '';
+  filterMinAmount: number | null = null;
+  filterMaxAmount: number | null = null;
+  filterSearch = '';
   filterType: '' | TransactionType = '';
 
   readonly transactionTypes: TransactionType[] = ['INCOME', 'EXPENSE'];
@@ -53,14 +67,35 @@ export class TransactionsComponent implements OnInit {
     transactionType: 'EXPENSE',
   };
 
+  editId: string | null = null;
+  editForm: {
+    categoryId: string;
+    amount: number | null;
+    date: string;
+    frequency: '' | Frequency;
+    description: string;
+    transactionType: TransactionType;
+  } = {
+    categoryId: '',
+    amount: null,
+    date: '',
+    frequency: '',
+    description: '',
+    transactionType: 'EXPENSE',
+  };
+
   ngOnInit(): void {
-    const activeUserId = this.authService.getCurrentUserId();
-    if (activeUserId) {
-      this.filterUserId = activeUserId;
-      this.form.userId = activeUserId;
-    }
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        const activeUserId = user?.id ?? '';
+        this.filterUserId = activeUserId;
+        this.form.userId = activeUserId;
+        if (activeUserId) {
+          this.loadTransactions();
+        }
+      });
     this.loadCategories();
-    this.loadTransactions();
   }
 
   loadCategories(): void {
@@ -71,31 +106,55 @@ export class TransactionsComponent implements OnInit {
   }
 
   loadTransactions(): void {
+    const effectiveUserId = (this.filterUserId || this.authService.getCurrentUserId() || '').trim();
+    if (!effectiveUserId) {
+      this.transactions = [];
+      this.error = 'Aucun utilisateur actif. Reconnecte-toi.';
+      this.loading = false;
+      return;
+    }
+
+    this.filterUserId = effectiveUserId;
+    this.form.userId = effectiveUserId;
     this.loading = true;
     this.error = null;
-    this.transactionService
-      .getAll(this.filterUserId || undefined, this.filterType || undefined)
-      .subscribe({
-        next: (data) => {
-          this.transactions = data;
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error(err);
-          this.error = 'Impossible de charger les transactions.';
-          this.loading = false;
-        },
-      });
+
+    const filters: TransactionFilters = {
+      userId: effectiveUserId,
+      categoryId: this.filterCategoryId || undefined,
+      start: this.filterStart || undefined,
+      end: this.filterEnd || undefined,
+      minAmount: this.filterMinAmount,
+      maxAmount: this.filterMaxAmount,
+      transactionType: this.filterType || undefined,
+      search: this.filterSearch || undefined,
+    };
+
+    this.transactionService.getAll(filters).subscribe({
+      next: (data) => {
+        this.transactions = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.error =
+          typeof err?.error === 'string'
+            ? `Transactions indisponibles : ${err.error}`
+            : 'Impossible de charger les transactions.';
+        this.loading = false;
+      },
+    });
   }
 
   createTransaction(): void {
-    if (!this.form.userId || !this.form.amount || !this.form.date) {
-      this.error = 'UserId, amount et date sont obligatoires.';
+    const effectiveUserId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
+    if (!effectiveUserId || !this.form.amount || !this.form.date) {
+      this.error = 'Montant, date et utilisateur connecté sont obligatoires.';
       return;
     }
 
     const payload: TransactionRequest = {
-      userId: this.form.userId.trim(),
+      userId: effectiveUserId,
       categoryId: this.form.categoryId || null,
       amount: this.form.amount,
       date: this.form.date,
@@ -109,25 +168,114 @@ export class TransactionsComponent implements OnInit {
         this.form.amount = null;
         this.form.date = '';
         this.form.description = '';
+        this.form.categoryId = '';
+        this.form.frequency = '';
+        this.form.transactionType = 'EXPENSE';
+        this.showAddForm = false;
+        this.alertService.success('Transaction ajoutée.');
         this.loadTransactions();
       },
       error: (err) => {
         console.error(err);
-        this.error = 'Echec de creation de la transaction.';
+        this.error =
+          typeof err?.error === 'string'
+            ? `Échec : ${err.error}`
+            : 'Échec de création de la transaction.';
+        this.alertService.error(this.error ?? '');
       },
     });
   }
 
-  deleteTransaction(id: string): void {
-    if (!confirm('Supprimer cette transaction ?')) {
+  startEdit(transaction: Transaction): void {
+    this.editId = transaction.id;
+    this.editForm = {
+      categoryId: transaction.category?.id || '',
+      amount: Number(transaction.amount),
+      date: transaction.date ? this.toInputDate(transaction.date) : '',
+      frequency: transaction.frequency || '',
+      description: transaction.description || '',
+      transactionType: transaction.transactionType,
+    };
+  }
+
+  cancelEdit(): void {
+    this.editId = null;
+  }
+
+  saveEdit(): void {
+    if (!this.editId) return;
+    const effectiveUserId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
+    if (!effectiveUserId || !this.editForm.amount || !this.editForm.date) {
+      this.error = 'Montant, date et utilisateur connecté sont obligatoires.';
       return;
     }
-    this.transactionService.delete(id).subscribe({
-      next: () => this.loadTransactions(),
+    const payload: TransactionRequest = {
+      userId: effectiveUserId,
+      categoryId: this.editForm.categoryId || null,
+      amount: this.editForm.amount,
+      date: this.editForm.date,
+      frequency: this.editForm.frequency || null,
+      description: this.editForm.description || null,
+      transactionType: this.editForm.transactionType,
+    };
+    this.transactionService.update(this.editId, payload).subscribe({
+      next: () => {
+        this.editId = null;
+        this.alertService.success('Transaction modifiée.');
+        this.loadTransactions();
+      },
       error: (err) => {
         console.error(err);
-        this.error = 'Echec de suppression.';
+        this.error =
+          typeof err?.error === 'string'
+            ? `Échec de modification : ${err.error}`
+            : 'Échec de modification de la transaction.';
+        this.alertService.error(this.error ?? '');
       },
     });
+  }
+
+  async deleteTransaction(id: string): Promise<void> {
+    const confirmed = await this.alertService.confirmDelete('cette transaction');
+    if (!confirmed) return;
+    this.transactionService.delete(id).subscribe({
+      next: () => {
+        this.alertService.success('Transaction supprimée.');
+        this.loadTransactions();
+      },
+      error: (err) => {
+        console.error(err);
+        this.alertService.error('Échec de suppression.');
+      },
+    });
+  }
+
+  resetFilters(): void {
+    this.filterCategoryId = '';
+    this.filterType = '';
+    this.filterStart = '';
+    this.filterEnd = '';
+    this.filterMinAmount = null;
+    this.filterMaxAmount = null;
+    this.filterSearch = '';
+    this.loadTransactions();
+  }
+
+  private toInputDate(value: string): string {
+    const date = new Date(value);
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  }
+
+  get totalIncome(): number {
+    return this.transactions
+      .filter((t) => t.transactionType === 'INCOME')
+      .reduce((acc, t) => acc + Number(t.amount), 0);
+  }
+
+  get totalExpense(): number {
+    return this.transactions
+      .filter((t) => t.transactionType === 'EXPENSE')
+      .reduce((acc, t) => acc + Number(t.amount), 0);
   }
 }

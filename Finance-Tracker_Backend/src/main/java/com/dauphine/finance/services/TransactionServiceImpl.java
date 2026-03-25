@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -31,6 +32,65 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<Transaction> getAll() {
         return repository.findAll();
+    }
+
+    @Override
+    public List<Transaction> getAllWithFilters(
+            UUID userId,
+            UUID categoryId,
+            LocalDateTime start,
+            LocalDateTime end,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            TransactionType transactionType,
+            String search
+    ) {
+        List<Transaction> transactions;
+        if (userId != null) {
+            userRepository.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundByIdException(userId));
+            transactions = repository.findAllByUserId(userId);
+        } else {
+            transactions = repository.findAll();
+        }
+
+        if (categoryId != null) {
+            transactions = transactions.stream()
+                    .filter(t -> t.getCategory() != null && categoryId.equals(t.getCategory().getId()))
+                    .collect(Collectors.toList());
+        }
+        if (start != null) {
+            transactions = transactions.stream()
+                    .filter(t -> t.getDate() != null && !t.getDate().isBefore(start))
+                    .collect(Collectors.toList());
+        }
+        if (end != null) {
+            transactions = transactions.stream()
+                    .filter(t -> t.getDate() != null && !t.getDate().isAfter(end))
+                    .collect(Collectors.toList());
+        }
+        if (minAmount != null) {
+            transactions = transactions.stream()
+                    .filter(t -> t.getAmount() != null && t.getAmount().compareTo(minAmount) >= 0)
+                    .collect(Collectors.toList());
+        }
+        if (maxAmount != null) {
+            transactions = transactions.stream()
+                    .filter(t -> t.getAmount() != null && t.getAmount().compareTo(maxAmount) <= 0)
+                    .collect(Collectors.toList());
+        }
+        if (transactionType != null) {
+            transactions = transactions.stream()
+                    .filter(t -> t.getTransactionType() == transactionType)
+                    .collect(Collectors.toList());
+        }
+        if (search != null && !search.isBlank()) {
+            String lowered = search.toLowerCase();
+            transactions = transactions.stream()
+                    .filter(t -> t.getDescription() != null && t.getDescription().toLowerCase().contains(lowered))
+                    .collect(Collectors.toList());
+        }
+        return transactions;
     }
 
     @Override

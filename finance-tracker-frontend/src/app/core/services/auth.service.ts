@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { User } from '../models/user.model';
 import { UserService } from './user.service';
 
@@ -12,6 +12,10 @@ const AUTH_USER_KEY = 'finance_tracker_active_user';
 export class AuthService {
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
+  private readonly currentUserSubject = new BehaviorSubject<User | null>(
+    this.readUserFromStorage(),
+  );
+  readonly currentUser$ = this.currentUserSubject.asObservable();
 
   login(email: string, password: string): Observable<User | null> {
     return this.userService.getAll().pipe(
@@ -27,21 +31,14 @@ export class AuthService {
       tap((user) => {
         if (user) {
           localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+          this.currentUserSubject.next(user);
         }
       }),
     );
   }
 
   getCurrentUser(): User | null {
-    const raw = localStorage.getItem(AUTH_USER_KEY);
-    if (!raw) {
-      return null;
-    }
-    try {
-      return JSON.parse(raw) as User;
-    } catch {
-      return null;
-    }
+    return this.currentUserSubject.value;
   }
 
   getCurrentUserId(): string | null {
@@ -54,6 +51,19 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(AUTH_USER_KEY);
+    this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
+  }
+
+  private readUserFromStorage(): User | null {
+    const raw = localStorage.getItem(AUTH_USER_KEY);
+    if (!raw) {
+      return null;
+    }
+    try {
+      return JSON.parse(raw) as User;
+    } catch {
+      return null;
+    }
   }
 }

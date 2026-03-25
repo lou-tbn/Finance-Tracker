@@ -1,3 +1,150 @@
 :host {
   display: block;
 }
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Search bar ─────────────────────────────────────────── */
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+
+  svg {
+    color: var(--subtle);
+    flex-shrink: 0;
+  }
+
+  input {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: var(--text);
+    background: transparent;
+    width: 100%;
+
+    &::placeholder {
+      color: var(--subtle);
+    }
+  }
+}
+
+/* ─── Goals grid ─────────────────────────────────────────── */
+
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Goal card ──────────────────────────────────────────── */
+
+.goal-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: var(--shadow);
+  }
+
+  &.is-done {
+    border-color: var(--success);
+    background: linear-gradient(135deg, #fff 60%, #ecfdf5 100%);
+  }
+}
+
+/* ─── Progress ring ──────────────────────────────────────── */
+
+.progress-ring-wrap {
+  flex-shrink: 0;
+}
+
+/* ─── Goal body ──────────────────────────────────────────── */
+
+.goal-body {
+  flex: 1;
+  min-width: 0;
+
+  .goal-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .badge-done {
+    background: var(--success-light);
+    color: var(--success);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+
+  .goal-amounts {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  .goal-deadline {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .goal-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+}
+
+/* ─── Edit form inside card ──────────────────────────────── */
+
+.goal-edit-form {
+  flex: 1;
+
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+}

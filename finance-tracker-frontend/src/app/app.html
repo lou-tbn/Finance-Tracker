@@ -1,4 +1,8 @@
-<app-top-bar></app-top-bar>
-<div class="container py-4">
-  <router-outlet />
+<div class="app-shell">
+  @if (isAuthenticated) {
+    <app-sidebar />
+  }
+  <main class="app-content" [class.has-sidebar]="isAuthenticated">
+    <router-outlet />
+  </main>
 </div>

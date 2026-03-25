@@ -22,6 +22,10 @@ export class CategoryService {
     return this.http.post<Category>(this.baseUrl, payload);
   }
 
+  update(id: string, payload: CategoryRequest): Observable<Category> {
+    return this.http.put<Category>(`${this.baseUrl}/${id}`, payload);
+  }
+
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }

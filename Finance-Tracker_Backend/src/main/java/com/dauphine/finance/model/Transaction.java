@@ -31,6 +31,7 @@ public class Transaction {
     @Column(name = "date", nullable = false)
     private LocalDateTime date;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "frequency", columnDefinition = "frequency")
     private Frequency frequency;
 

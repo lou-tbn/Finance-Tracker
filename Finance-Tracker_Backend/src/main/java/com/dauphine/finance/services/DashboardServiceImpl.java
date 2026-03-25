@@ -27,22 +27,32 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public DashboardResponse getDashboard(UUID userId) {
+    public DashboardResponse getDashboard(UUID userId, Integer month, Integer year) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundByIdException(userId));
 
-        int month = LocalDateTime.now().getMonthValue();
-        int year = LocalDateTime.now().getYear();
+        LocalDateTime now = LocalDateTime.now();
+        int effectiveMonth = month != null ? month : now.getMonthValue();
+        int effectiveYear = year != null ? year : now.getYear();
 
+<<<<<<< HEAD
         BigDecimal totalIncome = transactionRepository.sumIncomeByUserAndMonth(userId, month, year);
         BigDecimal totalExpense = transactionRepository.sumExpenseByUserAndMonth(userId, month, year);
+=======
+        BigDecimal totalIncome = transactionRepository.sumIncomeByUserAndMonth(userId, effectiveMonth, effectiveYear);
+        BigDecimal totalExpense = transactionRepository.sumExpenseByUserAndMonth(userId, effectiveMonth, effectiveYear);
+>>>>>>> a10df82 (Mise à jour)
 
         totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
         totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
 
         BigDecimal balance = totalIncome.subtract(totalExpense);
 
+<<<<<<< HEAD
         List<Object[]> rawExpenses = transactionRepository.sumExpensesByCategoryForUser(userId);
+=======
+        List<Object[]> rawExpenses = transactionRepository.sumExpensesByCategoryForUserAndMonth(userId, effectiveMonth, effectiveYear);
+>>>>>>> a10df82 (Mise à jour)
         List<DashboardResponse.CategoryExpense> expensesByCategory = rawExpenses.stream()
                 .map(row -> new DashboardResponse.CategoryExpense(
                         (String) row[0],

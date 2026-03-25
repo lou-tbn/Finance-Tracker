@@ -36,7 +36,7 @@ export class LoginComponent {
           this.error = 'Identifiants invalides.';
           return;
         }
-        this.router.navigate(['/']);
+        this.router.navigateByUrl('/', { replaceUrl: true });
       },
       error: (err) => {
         console.error(err);

@@ -1,7 +1,425 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 
+/* ================================
+   DESIGN SYSTEM — FINANCE TRACKER
+   ================================ */
+
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #eef2ff;
+
+  --success: #10b981;
+  --success-light: #ecfdf5;
+
+  --danger: #f43f5e;
+  --danger-light: #fff1f2;
+
+  --warning: #f59e0b;
+  --warning-light: #fffbeb;
+
+  --sidebar-width: 240px;
+  --sidebar-bg: #0f172a;
+
+  --bg: #f1f5f9;
+  --card: #ffffff;
+
+  --text: #1e293b;
+  --muted: #64748b;
+  --subtle: #94a3b8;
+
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-color: #f5f5f7;
+}
+
+/* ─── Bootstrap overrides ─────────────────────────────── */
+
+.card {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  background: var(--card);
+}
+
+.form-control,
+.form-select {
+  border-radius: var(--radius) !important;
+  border-color: var(--border);
+  font-size: 14px;
+  padding: 8px 12px;
+
+  &:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+  }
+}
+
+.btn {
+  border-radius: var(--radius) !important;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  &:hover,
+  &:focus {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+  }
+}
+
+.btn-outline-primary {
+  color: var(--primary);
+  border-color: var(--primary);
+  &:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+  }
+}
+
+.btn-success {
+  background: var(--success);
+  border-color: var(--success);
+  &:hover {
+    background: #059669;
+    border-color: #059669;
+  }
+}
+
+.btn-danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  &:hover {
+    background: #e11d48;
+    border-color: #e11d48;
+  }
+}
+
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: var(--radius-sm) !important;
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.2px;
+}
+
+.table {
+  > :not(caption) > * > * {
+    padding: 11px 16px;
+    border-color: var(--border-light);
+    vertical-align: middle;
+  }
+
+  thead th {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+  }
+
+  tbody tr:hover td {
+    background: #f8fafc;
+  }
+}
+
+.progress {
+  background: var(--border);
+  border-radius: 99px;
+}
+
+.progress-bar {
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* ─── Page layout ─────────────────────────────────────── */
+
+.page {
+  padding: 28px 32px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+}
+
+/* ─── KPI cards ───────────────────────────────────────── */
+
+.kpi-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &.income {
+    border-top: 3px solid var(--success);
+    .kpi-icon {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    .kpi-value {
+      color: var(--success);
+    }
+  }
+
+  &.expense {
+    border-top: 3px solid var(--danger);
+    .kpi-icon {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+    .kpi-value {
+      color: var(--danger);
+    }
+  }
+
+  &.balance {
+    border-top: 3px solid var(--primary);
+    .kpi-icon {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .kpi-value {
+      color: var(--primary);
+    }
+  }
+
+  &.neutral {
+    border-top: 3px solid var(--warning);
+    .kpi-icon {
+      background: var(--warning-light);
+      color: var(--warning);
+    }
+    .kpi-value {
+      color: var(--warning);
+    }
+  }
+}
+
+/* ─── Section cards ───────────────────────────────────── */
+
+.section-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+
+  .section-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  .section-body {
+    padding: 20px;
+  }
+}
+
+/* ─── Add form panel ──────────────────────────────────── */
+
+.add-form-panel {
+  background: #f8fafc;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+}
+
+/* ─── Edit panel (inline) ─────────────────────────────── */
+
+.edit-panel {
+  background: #f8fafc;
+  border-radius: var(--radius);
+  padding: 16px;
+
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+}
+
+/* ─── Badges ──────────────────────────────────────────── */
+
+.badge-income {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.badge-expense {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.badge-primary {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* ─── Empty state ─────────────────────────────────────── */
+
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+
+  .empty-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    opacity: 0.35;
+  }
+
+  p {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+/* ─── Spinner ─────────────────────────────────────────── */
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 56px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ─── Goal card ───────────────────────────────────────── */
+
+.goal-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+
+  &.is-done {
+    border-color: var(--success);
+    background: linear-gradient(135deg, #fff 70%, #ecfdf5 100%);
+  }
+
+  .goal-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .goal-amounts {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .goal-deadline {
+    font-size: 12px;
+    color: var(--subtle);
+    margin-top: 8px;
+  }
+}
+
+/* ─── Category dot ────────────────────────────────────── */
+
+.cat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }

@@ -49,6 +49,26 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     List<Transaction> findAllByUserIdAndTransactionType(@Param("userId") UUID userId, @Param("type") TransactionType type);
 
     @Query("""
+        SELECT t
+        FROM Transaction t
+        WHERE (:userId IS NULL OR t.user.id = :userId)
+          AND (:categoryId IS NULL OR (t.category IS NOT NULL AND t.category.id = :categoryId))
+          AND (:start IS NULL OR t.date >= :start)
+          AND (:end IS NULL OR t.date <= :end)
+          AND (:minAmount IS NULL OR t.amount >= :minAmount)
+          AND (:maxAmount IS NULL OR t.amount <= :maxAmount)
+        ORDER BY t.date DESC
+    """)
+    List<Transaction> findAllWithFilters(
+        @Param("userId") UUID userId,
+        @Param("categoryId") UUID categoryId,
+        @Param("start") LocalDateTime start,
+        @Param("end") LocalDateTime end,
+        @Param("minAmount") BigDecimal minAmount,
+        @Param("maxAmount") BigDecimal maxAmount
+    );
+
+    @Query("""
         SELECT SUM(t.amount) FROM Transaction t
         WHERE t.user.id = :userId
         AND t.transactionType = 'INCOME'
@@ -74,4 +94,19 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
         GROUP BY t.category.name
     """)
     List<Object[]> sumExpensesByCategoryForUser(@Param("userId") UUID userId);
+
+    @Query("""
+        SELECT t.category.name, SUM(t.amount) FROM Transaction t
+        WHERE t.user.id = :userId
+        AND t.transactionType = 'EXPENSE'
+        AND t.category IS NOT NULL
+        AND MONTH(t.date) = :month
+        AND YEAR(t.date) = :year
+        GROUP BY t.category.name
+    """)
+    List<Object[]> sumExpensesByCategoryForUserAndMonth(
+        @Param("userId") UUID userId,
+        @Param("month") int month,
+        @Param("year") int year
+    );
 }

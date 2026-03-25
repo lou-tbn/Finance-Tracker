@@ -43,24 +43,19 @@ public class TransactionController {
             @RequestParam(required = false) LocalDateTime end,
             @RequestParam(required = false) BigDecimal minAmount,
             @RequestParam(required = false) BigDecimal maxAmount,
-            @RequestParam(required = false) TransactionType transactionType
+            @RequestParam(required = false) TransactionType transactionType,
+            @RequestParam(required = false) String search
     ) {
-        if (userId != null && categoryId != null) {
-            return ResponseEntity.ok(service.getAllByUserIdAndCategoryId(userId, categoryId));
-        }
-        if (userId != null && start != null && end != null) {
-            return ResponseEntity.ok(service.getAllByUserIdAndDateBetween(userId, start, end));
-        }
-        if (userId != null && minAmount != null && maxAmount != null) {
-            return ResponseEntity.ok(service.getAllByUserIdAndAmountBetween(userId, minAmount, maxAmount));
-        }
-        if (userId != null && transactionType != null) {
-            return ResponseEntity.ok(service.getAllByUserIdAndTransactionType(userId, transactionType));
-        }
-        if (userId != null) {
-            return ResponseEntity.ok(service.getAllByUserId(userId));
-        }
-        return ResponseEntity.ok(service.getAll());
+        return ResponseEntity.ok(service.getAllWithFilters(
+                userId,
+                categoryId,
+                start,
+                end,
+                minAmount,
+                maxAmount,
+                transactionType,
+                search
+        ));
     }
 
     @GetMapping("/{id}")

@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Transaction,
+  TransactionFilters,
   TransactionRequest,
-  TransactionType,
 } from '../models/transaction.model';
 
 @Injectable({
@@ -15,19 +15,41 @@ export class TransactionService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/v1/transactions`;
 
-  getAll(userId?: string, transactionType?: TransactionType): Observable<Transaction[]> {
+  getAll(filters: TransactionFilters): Observable<Transaction[]> {
     let params = new HttpParams();
-    if (userId?.trim()) {
-      params = params.set('userId', userId.trim());
+    params = params.set('userId', filters.userId.trim());
+
+    if (filters.categoryId?.trim()) {
+      params = params.set('categoryId', filters.categoryId.trim());
     }
-    if (transactionType) {
-      params = params.set('transactionType', transactionType);
+    if (filters.start?.trim()) {
+      params = params.set('start', filters.start.trim());
     }
+    if (filters.end?.trim()) {
+      params = params.set('end', filters.end.trim());
+    }
+    if (filters.minAmount != null) {
+      params = params.set('minAmount', `${filters.minAmount}`);
+    }
+    if (filters.maxAmount != null) {
+      params = params.set('maxAmount', `${filters.maxAmount}`);
+    }
+    if (filters.transactionType) {
+      params = params.set('transactionType', filters.transactionType);
+    }
+    if (filters.search?.trim()) {
+      params = params.set('search', filters.search.trim());
+    }
+
     return this.http.get<Transaction[]>(this.baseUrl, { params });
   }
 
   create(payload: TransactionRequest): Observable<Transaction> {
     return this.http.post<Transaction>(this.baseUrl, payload);
+  }
+
+  update(id: string, payload: TransactionRequest): Observable<Transaction> {
+    return this.http.put<Transaction>(`${this.baseUrl}/${id}`, payload);
   }
 
   delete(id: string): Observable<void> {

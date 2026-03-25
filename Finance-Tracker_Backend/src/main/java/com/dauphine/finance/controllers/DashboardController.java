@@ -25,7 +25,11 @@ public class DashboardController {
             summary = "Get dashboard for a user",
             description = "Returns total income/expense this month, balance, expenses by category and goal progress"
     )
-    public ResponseEntity<DashboardResponse> getDashboard(@PathVariable UUID userId) {
-        return ResponseEntity.ok(service.getDashboard(userId));
+    public ResponseEntity<DashboardResponse> getDashboard(
+            @PathVariable UUID userId,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year
+    ) {
+        return ResponseEntity.ok(service.getDashboard(userId, month, year));
     }
 }

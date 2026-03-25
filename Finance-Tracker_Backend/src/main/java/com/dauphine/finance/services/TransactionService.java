@@ -24,6 +24,17 @@ public interface TransactionService {
 
     List<Transaction> getAll();
 
+    List<Transaction> getAllWithFilters(
+            UUID userId,
+            UUID categoryId,
+            LocalDateTime start,
+            LocalDateTime end,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            TransactionType transactionType,
+            String search
+    );
+
     Transaction getById(UUID id);
 
     Transaction create(UUID userId, UUID categoryId, BigDecimal amount, LocalDateTime date, Frequency frequency, String description, TransactionType transactionType);

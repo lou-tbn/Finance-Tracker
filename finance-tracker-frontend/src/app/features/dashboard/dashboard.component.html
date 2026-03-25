@@ -1,103 +1,188 @@
-<div class="container py-4">
-  <h1 class="mb-4">Finance Tracker Dashboard</h1>
+<div class="page">
 
-  <form class="row g-2 align-items-end mb-4" (ngSubmit)="loadDashboard()">
-    <div class="col-12 col-md-6">
-      <label for="userId" class="form-label">User ID (UUID)</label>
-      <input
-        id="userId"
-        class="form-control"
-        type="text"
-        [(ngModel)]="userId"
-        name="userId"
-        placeholder="Enter a user UUID"
-      />
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h1>Tableau de bord</h1>
+      <div class="subtitle">Vue globale de tes finances</div>
     </div>
-    <div class="col-auto">
-      <button class="btn btn-primary" type="submit">
-        Load dashboard
+    <div class="month-controls">
+      <div class="month-field">
+        <label>Période</label>
+        <input
+          type="month"
+          class="form-control"
+          [(ngModel)]="selectedMonth"
+          (change)="onMonthChange()"
+        />
+      </div>
+      <button class="btn btn-primary" (click)="loadDashboard()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Actualiser
       </button>
     </div>
-  </form>
-
-  <div *ngIf="loading" class="alert alert-info">
-    Loading dashboard...
   </div>
 
-  <div *ngIf="error" class="alert alert-danger">
-    {{ error }}
-  </div>
+  <!-- Chargement -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+      <span>Chargement des données...</span>
+    </div>
+  }
 
-  <div *ngIf="data" class="row g-3">
-    <div class="col-12 col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">This month</h5>
-          <p class="mb-1">
-            <strong>Income:</strong>
-            {{ data.totalIncomeThisMonth | number: '1.2-2' }}
-          </p>
-          <p class="mb-1">
-            <strong>Expense:</strong>
-            {{ data.totalExpenseThisMonth | number: '1.2-2' }}
-          </p>
-          <p class="mb-0">
-            <strong>Balance:</strong>
-            {{ data.balance | number: '1.2-2' }}
-          </p>
+  <!-- Erreur -->
+  @if (error && !loading) {
+    <div class="error-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ error }}
+    </div>
+  }
+
+  <!-- Données -->
+  @if (data && !loading) {
+
+    <!-- KPI Row -->
+    <div class="kpi-row">
+
+      <div class="kpi-card income">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="kpi-label">Revenus du mois</div>
+          <div class="kpi-value">{{ data.totalIncomeThisMonth | number:'1.2-2' }} €</div>
         </div>
       </div>
-    </div>
 
-    <div class="col-12 col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Expenses by category</h5>
-          <p *ngIf="!data.expensesByCategory.length" class="text-muted">
-            No expenses yet.
-          </p>
-          <ul class="list-group list-group-flush" *ngIf="data.expensesByCategory.length">
-            <li
-              class="list-group-item d-flex justify-content-between align-items-center"
-              *ngFor="let e of data.expensesByCategory"
-            >
-              <span>{{ e.categoryName }}</span>
-              <span class="fw-semibold">
-                {{ e.total | number: '1.2-2' }}
-              </span>
-            </li>
-          </ul>
+      <div class="kpi-card expense">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+          </svg>
+        </div>
+        <div>
+          <div class="kpi-label">Dépenses du mois</div>
+          <div class="kpi-value">{{ data.totalExpenseThisMonth | number:'1.2-2' }} €</div>
         </div>
       </div>
+
+      <div class="kpi-card balance">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="kpi-label">Solde</div>
+          <div class="kpi-value">{{ data.balance | number:'1.2-2' }} €</div>
+        </div>
+      </div>
+
+      <div class="kpi-card neutral">
+        <div class="kpi-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div>
+          <div class="kpi-label">Taux d'épargne</div>
+          <div class="kpi-value">{{ savingsRate | number:'1.0-0' }} %</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="col-12 col-md-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h5 class="card-title">Savings goals</h5>
-          <p *ngIf="!data.goalProgresses.length" class="text-muted">
-            No goals defined.
-          </p>
-          <div *ngFor="let g of data.goalProgresses" class="mb-3">
-            <div class="d-flex justify-content-between">
-              <span class="fw-semibold">{{ g.title }}</span>
-              <span>{{ g.progressPercentage | number: '1.0-0' }}%</span>
+    <!-- Aucune donnée -->
+    @if (data.totalIncomeThisMonth === 0 && data.totalExpenseThisMonth === 0) {
+      <div class="empty-period">
+        <div class="empty-icon">📊</div>
+        <p>Aucune donnée pour cette période. Essaie un autre mois ou ajoute des transactions.</p>
+      </div>
+    }
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+
+      <!-- Dépenses par catégorie -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Dépenses par catégorie</h2>
+          <span class="badge badge-expense">{{ data.expensesByCategory.length }} catégorie(s)</span>
+        </div>
+        <div class="section-body">
+          @if (!data.expensesByCategory.length) {
+            <div class="empty-state">
+              <div class="empty-icon">🏷️</div>
+              <p>Aucune dépense pour cette période</p>
             </div>
-            <div class="progress" style="height: 6px;">
-              <div
-                class="progress-bar"
-                role="progressbar"
-                [style.width.%]="g.progressPercentage"
-              ></div>
-            </div>
-            <small class="text-muted">
-              {{ g.currentAmount | number: '1.2-2' }} /
-              {{ g.targetAmount | number: '1.2-2' }}
-            </small>
-          </div>
+          } @else {
+            @for (cat of data.expensesByCategory; track cat.categoryName; let i = $index) {
+              <div class="cat-row">
+                <div class="cat-name">
+                  <span class="cat-dot" [style.background]="getCategoryColor(i)"></span>
+                  {{ cat.categoryName }}
+                </div>
+                <div class="cat-bar-wrap">
+                  <div
+                    class="cat-bar"
+                    [style.width.%]="getCategoryPercent(cat.total)"
+                    [style.background]="getCategoryColor(i)"
+                  ></div>
+                </div>
+                <span class="cat-amount">{{ cat.total | number:'1.2-2' }} €</span>
+              </div>
+            }
+          }
         </div>
       </div>
+
+      <!-- Objectifs -->
+      <div class="section-card">
+        <div class="section-header">
+          <h2>Objectifs d'épargne</h2>
+          <span class="badge badge-primary">{{ data.goalProgresses.length }} objectif(s)</span>
+        </div>
+        <div class="section-body">
+          @if (!data.goalProgresses.length) {
+            <div class="empty-state">
+              <div class="empty-icon">🎯</div>
+              <p>Aucun objectif défini</p>
+            </div>
+          } @else {
+            @for (goal of data.goalProgresses; track goal.title) {
+              <div class="goal-row">
+                <div class="goal-row-header">
+                  <span class="goal-name">{{ goal.title }}</span>
+                  <span class="goal-pct" [class.done]="goal.progressPercentage >= 100">
+                    {{ goal.progressPercentage | number:'1.0-0' }}%
+                  </span>
+                </div>
+                <div class="progress" style="height: 7px; margin: 6px 0;">
+                  <div
+                    class="progress-bar"
+                    [style.width.%]="goal.progressPercentage"
+                    [style.background]="goal.progressPercentage >= 100 ? '#10b981' : '#6366f1'"
+                  ></div>
+                </div>
+                <div class="goal-amounts-row">
+                  <span>{{ goal.currentAmount | number:'1.2-2' }} €</span>
+                  <span class="text-muted">/ {{ goal.targetAmount | number:'1.2-2' }} €</span>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
     </div>
-  </div>
+  }
+
 </div>
-
