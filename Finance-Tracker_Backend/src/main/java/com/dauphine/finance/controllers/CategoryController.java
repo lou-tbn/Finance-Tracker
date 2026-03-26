@@ -94,7 +94,7 @@ public class CategoryController {
     )
     public ResponseEntity<Void> deleteCategory(@PathVariable UUID id){
         service.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
 }

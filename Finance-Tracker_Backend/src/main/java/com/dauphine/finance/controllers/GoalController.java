@@ -104,7 +104,7 @@ public class GoalController {
     )
     public ResponseEntity<Void> deleteGoal(@PathVariable UUID id){
         service.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/transfer")

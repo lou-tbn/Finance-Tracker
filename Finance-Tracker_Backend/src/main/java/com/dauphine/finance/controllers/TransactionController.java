@@ -151,6 +151,6 @@ public class TransactionController {
     )
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) {
         service.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

@@ -95,7 +95,7 @@ public class UserController {
     )
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id){
         service.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
 }
