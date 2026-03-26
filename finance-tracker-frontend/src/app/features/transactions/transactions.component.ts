@@ -273,6 +273,14 @@ export class TransactionsComponent implements OnInit, OnDestroy {
     return local.toISOString().slice(0, 16);
   }
 
+  get expenses(): typeof this.transactions {
+    return this.transactions.filter(t => t.transactionType === 'EXPENSE');
+  }
+
+  get incomes(): typeof this.transactions {
+    return this.transactions.filter(t => t.transactionType === 'INCOME');
+  }
+
   get filteredCategoriesForCreate(): typeof this.categories {
     return this.categories.filter(c => c.categoryType === this.form.transactionType);
   }

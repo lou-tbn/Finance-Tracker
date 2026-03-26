@@ -81,8 +81,8 @@
           </svg>
         </div>
         <div>
-          <div class="kpi-label">Solde</div>
-          <div class="kpi-value">{{ data.balance | number:'1.2-2' }} €</div>
+          <div class="kpi-label">Solde cumulatif</div>
+          <div class="kpi-value" [class.negative]="data.balance < 0">{{ data.balance | number:'1.2-2' }} €</div>
         </div>
       </div>
 
@@ -108,10 +108,10 @@
       </div>
     }
 
-    <!-- Charts Row -->
+    <!-- Ligne 1 : Graphes côte à côte -->
     <div class="charts-row">
 
-      <!-- Dépenses par catégorie -->
+      <!-- Donut — dépenses par catégorie -->
       <div class="section-card">
         <div class="section-header">
           <h2>Dépenses par catégorie</h2>
@@ -124,65 +124,73 @@
               <p>Aucune dépense pour cette période</p>
             </div>
           } @else {
-            @for (cat of data.expensesByCategory; track cat.categoryName; let i = $index) {
-              <div class="cat-row">
-                <div class="cat-name">
-                  <span class="cat-dot" [style.background]="getCategoryColor(i)"></span>
-                  {{ cat.categoryName }}
-                </div>
-                <div class="cat-bar-wrap">
-                  <div
-                    class="cat-bar"
-                    [style.width.%]="getCategoryPercent(cat.total)"
-                    [style.background]="getCategoryColor(i)"
-                  ></div>
-                </div>
-                <span class="cat-amount">{{ cat.total | number:'1.2-2' }} €</span>
-              </div>
-            }
+            <div class="chart-container">
+              <canvas #donutCanvas></canvas>
+            </div>
           }
         </div>
       </div>
 
-      <!-- Objectifs -->
+      <!-- Bar chart — revenus vs dépenses -->
       <div class="section-card">
         <div class="section-header">
-          <h2>Objectifs d'épargne</h2>
-          <span class="badge badge-primary">{{ data.goalProgresses.length }} objectif(s)</span>
+          <h2>Revenus vs Dépenses</h2>
+          <span class="badge badge-primary">Ce mois</span>
         </div>
         <div class="section-body">
-          @if (!data.goalProgresses.length) {
+          @if (data.totalIncomeThisMonth === 0 && data.totalExpenseThisMonth === 0) {
             <div class="empty-state">
-              <div class="empty-icon">🎯</div>
-              <p>Aucun objectif défini</p>
+              <div class="empty-icon">📈</div>
+              <p>Aucune donnée pour cette période</p>
             </div>
           } @else {
-            @for (goal of data.goalProgresses; track goal.title) {
-              <div class="goal-row">
-                <div class="goal-row-header">
-                  <span class="goal-name">{{ goal.title }}</span>
-                  <span class="goal-pct" [class.done]="goal.progressPercentage >= 100">
-                    {{ goal.progressPercentage | number:'1.0-0' }}%
-                  </span>
-                </div>
-                <div class="progress" style="height: 7px; margin: 6px 0;">
-                  <div
-                    class="progress-bar"
-                    [style.width.%]="goal.progressPercentage"
-                    [style.background]="goal.progressPercentage >= 100 ? '#10b981' : '#6366f1'"
-                  ></div>
-                </div>
-                <div class="goal-amounts-row">
-                  <span>{{ goal.currentAmount | number:'1.2-2' }} €</span>
-                  <span class="text-muted">/ {{ goal.targetAmount | number:'1.2-2' }} €</span>
-                </div>
-              </div>
-            }
+            <div class="chart-container">
+              <canvas #barCanvas></canvas>
+            </div>
           }
         </div>
       </div>
 
     </div>
+
+    <!-- Ligne 2 : Objectifs -->
+    <div class="section-card" style="margin-top: 20px;">
+      <div class="section-header">
+        <h2>Objectifs d'épargne</h2>
+        <span class="badge badge-primary">{{ data.goalProgresses.length }} objectif(s)</span>
+      </div>
+      <div class="section-body goals-grid-dash">
+        @if (!data.goalProgresses.length) {
+          <div class="empty-state">
+            <div class="empty-icon">🎯</div>
+            <p>Aucun objectif défini</p>
+          </div>
+        } @else {
+          @for (goal of data.goalProgresses; track goal.title) {
+            <div class="goal-row">
+              <div class="goal-row-header">
+                <span class="goal-name">{{ goal.title }}</span>
+                <span class="goal-pct" [class.done]="goal.progressPercentage >= 100">
+                  {{ goal.progressPercentage | number:'1.0-0' }}%
+                </span>
+              </div>
+              <div class="progress" style="height: 7px; margin: 6px 0;">
+                <div
+                  class="progress-bar"
+                  [style.width.%]="goal.progressPercentage"
+                  [style.background]="goal.progressPercentage >= 100 ? '#10b981' : '#6366f1'"
+                ></div>
+              </div>
+              <div class="goal-amounts-row">
+                <span>{{ goal.currentAmount | number:'1.2-2' }} €</span>
+                <span class="text-muted">/ {{ goal.targetAmount | number:'1.2-2' }} €</span>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
   }
 
 </div>

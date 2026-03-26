@@ -95,6 +95,24 @@
   }
 }
 
+.chart-container {
+  position: relative;
+  height: 280px;
+  width: 100%;
+}
+
+/* Solde négatif en rouge */
+.kpi-value.negative {
+  color: var(--danger);
+}
+
+/* Objectifs en grille sur le dashboard */
+.goals-grid-dash {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 4px 24px;
+}
+
 /* ─── Category rows ──────────────────────────────────────── */
 
 .cat-row {

@@ -18,7 +18,7 @@
           <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
           <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
         </svg>
-        Générer récurrentes
+        Generate Recurring Transactions
       </button>
       <button class="btn btn-primary" (click)="showAddForm = !showAddForm">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -172,126 +172,198 @@
     <div class="alert alert-danger mb-3">{{ error }}</div>
   }
 
-  <!-- Table -->
-  <div class="section-card">
-    <div class="section-header">
-      <h2>
-        {{ transactions.length }} transaction(s)
-      </h2>
-      @if (loading) {
-        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-      }
+  <!-- Vue split : Dépenses | Revenus -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+      <span>Chargement...</span>
     </div>
+  }
 
-    @if (!loading) {
-      <div class="table-responsive">
-        <table class="table mb-0">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Catégorie</th>
-              <th>Type</th>
-              <th>Montant</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (t of transactions; track t.id) {
-              <tr>
-                <td class="text-muted-sm">{{ t.date | date:'dd/MM/yy HH:mm' }}</td>
-                <td>{{ t.description || '—' }}</td>
-                <td>
-                  @if (t.category) {
-                    <span class="badge badge-primary">{{ t.category.name }}</span>
-                  } @else {
-                    <span class="text-subtle">—</span>
-                  }
-                </td>
-                <td>
-                  <span class="badge" [class.badge-income]="t.transactionType === 'INCOME'" [class.badge-expense]="t.transactionType === 'EXPENSE'">
-                    {{ t.transactionType === 'INCOME' ? 'Revenu' : 'Dépense' }}
-                  </span>
-                </td>
-                <td class="fw-semibold" [class.text-income]="t.transactionType === 'INCOME'" [class.text-expense]="t.transactionType === 'EXPENSE'">
-                  {{ t.transactionType === 'INCOME' ? '+' : '-' }}{{ t.amount | number:'1.2-2' }} €
-                </td>
-                <td class="text-end">
-                  <button class="btn btn-sm btn-outline-secondary me-1" (click)="startEdit(t)">Modifier</button>
-                  <button class="btn btn-sm btn-outline-danger" (click)="deleteTransaction(t.id)">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-              @if (editId === t.id) {
-                <tr class="edit-row">
-                  <td colspan="6">
-                    <div class="edit-panel">
-                      <h4>Modifier la transaction</h4>
-                      <div class="row g-2">
-                        <div class="col-12 col-md-2">
-                          <label class="form-label">Type</label>
-                          <select class="form-select" [(ngModel)]="editForm.transactionType" name="editType" (ngModelChange)="editForm.categoryId = ''">
-                            <option value="INCOME">Revenu</option>
-                            <option value="EXPENSE">Dépense</option>
-                          </select>
-                        </div>
-                        <div class="col-12 col-md-3">
-                          <label class="form-label">Catégorie</label>
-                          <select class="form-select" [(ngModel)]="editForm.categoryId" name="editCategoryId">
-                            <option value="">Aucune</option>
-                            @for (c of filteredCategoriesForEdit; track c.id) {
-                              <option [value]="c.id">{{ c.name }}</option>
-                            }
-                          </select>
-                        </div>
-                        <div class="col-6 col-md-2">
-                          <label class="form-label">Montant</label>
-                          <input class="form-control" type="number" step="0.01" [(ngModel)]="editForm.amount" name="editAmount" />
-                        </div>
-                        <div class="col-6 col-md-3">
-                          <label class="form-label">Date</label>
-                          <input class="form-control" type="datetime-local" [(ngModel)]="editForm.date" name="editDate" />
-                        </div>
-                        <div class="col-12 col-md-3">
-                          <label class="form-label">Description</label>
-                          <input class="form-control" [(ngModel)]="editForm.description" name="editDescription" />
-                        </div>
-                        <div class="col-12 col-md-2">
-                          <label class="form-label">Fréquence</label>
-                          <select class="form-select" [(ngModel)]="editForm.frequency" name="editFrequency">
-                            <option value="">Unique</option>
-                            @for (f of frequencies; track f) {
-                              <option [value]="f">{{ f }}</option>
-                            }
-                          </select>
-                        </div>
-                        <div class="col-12 d-flex justify-content-end gap-2">
-                          <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Annuler</button>
-                          <button class="btn btn-sm btn-primary" (click)="saveEdit()">Enregistrer</button>
-                        </div>
+  @if (!loading) {
+    <div class="split-view">
+
+      <!-- ── Colonne DÉPENSES ── -->
+      <div class="section-card split-col">
+        <div class="section-header expense-header">
+          <div class="col-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+            </svg>
+            Dépenses
+          </div>
+          <span class="col-total text-expense">— {{ totalExpense | number:'1.2-2' }} €</span>
+        </div>
+        <div class="tx-list">
+          @if (!expenses.length) {
+            <div class="empty-state"><div class="empty-icon">✅</div><p>Aucune dépense</p></div>
+          } @else {
+            @for (t of expenses; track t.id) {
+              <div class="tx-card expense-card" [class.is-editing]="editId === t.id">
+                @if (editId !== t.id) {
+                  <div class="tx-row">
+                    <div class="tx-left">
+                      <div class="tx-desc">{{ t.description || '—' }}</div>
+                      <div class="tx-meta">
+                        {{ t.date | date:'dd/MM/yy' }}
+                        @if (t.category) {
+                          <span class="tx-cat">{{ t.category.name }}</span>
+                        }
                       </div>
                     </div>
-                  </td>
-                </tr>
-              }
-            }
-            @if (!transactions.length) {
-              <tr>
-                <td colspan="6">
-                  <div class="empty-state">
-                    <div class="empty-icon">💳</div>
-                    <p>Aucune transaction trouvée.<br>Clique sur « Nouvelle transaction » pour commencer.</p>
+                    <div class="tx-right">
+                      <div class="tx-amount text-expense">— {{ t.amount | number:'1.2-2' }} €</div>
+                      <div class="tx-actions">
+                        <button class="btn btn-xs btn-outline-secondary" (click)="startEdit(t)">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
+                        <button class="btn btn-xs btn-outline-danger" (click)="deleteTransaction(t.id)">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </td>
-              </tr>
+                } @else {
+                  <div class="edit-panel">
+                    <h4>Modifier</h4>
+                    <div class="row g-2">
+                      <div class="col-12 col-md-3">
+                        <label class="form-label">Catégorie</label>
+                        <select class="form-select form-select-sm" [(ngModel)]="editForm.categoryId" name="editCategoryId">
+                          <option value="">Aucune</option>
+                          @for (c of filteredCategoriesForEdit; track c.id) {
+                            <option [value]="c.id">{{ c.name }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div class="col-6 col-md-2">
+                        <label class="form-label">Montant</label>
+                        <input class="form-control form-control-sm" type="number" step="0.01" [(ngModel)]="editForm.amount" name="editAmount" />
+                      </div>
+                      <div class="col-6 col-md-3">
+                        <label class="form-label">Date</label>
+                        <input class="form-control form-control-sm" type="datetime-local" [(ngModel)]="editForm.date" name="editDate" />
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <label class="form-label">Description</label>
+                        <input class="form-control form-control-sm" [(ngModel)]="editForm.description" name="editDescription" />
+                      </div>
+                      <div class="col-12 col-md-3">
+                        <label class="form-label">Fréquence</label>
+                        <select class="form-select form-select-sm" [(ngModel)]="editForm.frequency" name="editFrequency">
+                          <option value="">Unique</option>
+                          @for (f of frequencies; track f) { <option [value]="f">{{ f }}</option> }
+                        </select>
+                      </div>
+                      <div class="col-12 d-flex justify-content-end gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Annuler</button>
+                        <button class="btn btn-sm btn-primary" (click)="saveEdit()">Enregistrer</button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
             }
-          </tbody>
-        </table>
+          }
+        </div>
       </div>
-    }
-  </div>
+
+      <!-- ── Colonne REVENUS ── -->
+      <div class="section-card split-col">
+        <div class="section-header income-header">
+          <div class="col-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+            </svg>
+            Revenus
+          </div>
+          <span class="col-total text-income">+ {{ totalIncome | number:'1.2-2' }} €</span>
+        </div>
+        <div class="tx-list">
+          @if (!incomes.length) {
+            <div class="empty-state"><div class="empty-icon">💰</div><p>Aucun revenu</p></div>
+          } @else {
+            @for (t of incomes; track t.id) {
+              <div class="tx-card income-card" [class.is-editing]="editId === t.id">
+                @if (editId !== t.id) {
+                  <div class="tx-row">
+                    <div class="tx-left">
+                      <div class="tx-desc">{{ t.description || '—' }}</div>
+                      <div class="tx-meta">
+                        {{ t.date | date:'dd/MM/yy' }}
+                        @if (t.category) {
+                          <span class="tx-cat">{{ t.category.name }}</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="tx-right">
+                      <div class="tx-amount text-income">+ {{ t.amount | number:'1.2-2' }} €</div>
+                      <div class="tx-actions">
+                        <button class="btn btn-xs btn-outline-secondary" (click)="startEdit(t)">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
+                        <button class="btn btn-xs btn-outline-danger" (click)="deleteTransaction(t.id)">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="edit-panel">
+                    <h4>Modifier</h4>
+                    <div class="row g-2">
+                      <div class="col-12 col-md-3">
+                        <label class="form-label">Catégorie</label>
+                        <select class="form-select form-select-sm" [(ngModel)]="editForm.categoryId" name="editCategoryId2">
+                          <option value="">Aucune</option>
+                          @for (c of filteredCategoriesForEdit; track c.id) {
+                            <option [value]="c.id">{{ c.name }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div class="col-6 col-md-2">
+                        <label class="form-label">Montant</label>
+                        <input class="form-control form-control-sm" type="number" step="0.01" [(ngModel)]="editForm.amount" name="editAmount2" />
+                      </div>
+                      <div class="col-6 col-md-3">
+                        <label class="form-label">Date</label>
+                        <input class="form-control form-control-sm" type="datetime-local" [(ngModel)]="editForm.date" name="editDate2" />
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <label class="form-label">Description</label>
+                        <input class="form-control form-control-sm" [(ngModel)]="editForm.description" name="editDescription2" />
+                      </div>
+                      <div class="col-12 col-md-3">
+                        <label class="form-label">Fréquence</label>
+                        <select class="form-select form-select-sm" [(ngModel)]="editForm.frequency" name="editFrequency2">
+                          <option value="">Unique</option>
+                          @for (f of frequencies; track f) { <option [value]="f">{{ f }}</option> }
+                        </select>
+                      </div>
+                      <div class="col-12 d-flex justify-content-end gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Annuler</button>
+                        <button class="btn btn-sm btn-primary" (click)="saveEdit()">Enregistrer</button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+    </div>
+  }
 
 </div>
