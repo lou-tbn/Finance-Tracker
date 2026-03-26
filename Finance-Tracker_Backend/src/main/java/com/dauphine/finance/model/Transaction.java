@@ -32,7 +32,7 @@ public class Transaction {
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "frequency", columnDefinition = "frequency")
+    @Column(name = "frequency")
     private Frequency frequency;
 
     @Column(name = "description")

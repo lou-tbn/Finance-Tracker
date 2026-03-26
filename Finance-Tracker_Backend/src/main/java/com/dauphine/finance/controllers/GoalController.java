@@ -1,6 +1,7 @@
 package com.dauphine.finance.controllers;
 
 import com.dauphine.finance.DTO.GoalRequest;
+import com.dauphine.finance.DTO.TransferRequest;
 import com.dauphine.finance.model.Goal;
 import com.dauphine.finance.services.GoalService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -104,6 +105,26 @@ public class GoalController {
     public ResponseEntity<Void> deleteGoal(@PathVariable UUID id){
         service.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/transfer")
+    @Operation(
+            summary = "Transfer money to a goal",
+            description = "Deducts amount from user balance (creates an EXPENSE transaction) and adds it to the goal's current amount"
+    )
+    public ResponseEntity<Goal> transfer(@PathVariable UUID id, @RequestBody TransferRequest request) {
+        Goal updated = service.transfer(id, request.getUserId(), request.getAmount());
+        return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/{id}/withdraw")
+    @Operation(
+            summary = "Withdraw money from a goal",
+            description = "Returns amount from the goal back to user balance (creates an INCOME transaction) and deducts it from the goal's current amount"
+    )
+    public ResponseEntity<Goal> withdraw(@PathVariable UUID id, @RequestBody TransferRequest request) {
+        Goal updated = service.withdraw(id, request.getUserId(), request.getAmount());
+        return ResponseEntity.ok(updated);
     }
 
 }

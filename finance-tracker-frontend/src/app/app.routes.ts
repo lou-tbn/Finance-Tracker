@@ -8,34 +8,44 @@ export const routes: Routes = [
       import('./features/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    // Toutes les pages protégées partagent ce layout (sidebar + main)
     path: '',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/dashboard/dashboard.component').then(
-        (m) => m.DashboardComponent,
-      ),
-  },
-  {
-    path: 'transactions',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/transactions/transactions.component').then(
-        (m) => m.TransactionsComponent,
-      ),
-  },
-  {
-    path: 'categories',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/categories/categories.component').then(
-        (m) => m.CategoriesComponent,
-      ),
-  },
-  {
-    path: 'goals',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/goals/goals.component').then((m) => m.GoalsComponent),
+      import('./components/layout/layout.component').then((m) => m.LayoutComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
+      },
+      {
+        path: 'transactions',
+        loadComponent: () =>
+          import('./features/transactions/transactions.component').then(
+            (m) => m.TransactionsComponent,
+          ),
+      },
+      {
+        path: 'categories',
+        loadComponent: () =>
+          import('./features/categories/categories.component').then(
+            (m) => m.CategoriesComponent,
+          ),
+      },
+      {
+        path: 'goals',
+        loadComponent: () =>
+          import('./features/goals/goals.component').then((m) => m.GoalsComponent),
+      },
+    ],
   },
   {
     path: '**',

@@ -95,7 +95,7 @@
 
 .form-card {
   width: 100%;
-  max-width: 380px;
+  max-width: 420px;
   background: white;
   border-radius: 16px;
   padding: 36px;
@@ -114,11 +114,11 @@
   .form-subtitle {
     color: #64748b;
     font-size: 14px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .field {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 
     label {
       display: block;
@@ -138,6 +138,7 @@
       background: white;
       outline: none;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      box-sizing: border-box;
 
       &::placeholder {
         color: #94a3b8;
@@ -163,23 +164,6 @@
     margin-bottom: 16px;
   }
 
-  .switch-link {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 13px;
-    color: #64748b;
-
-    a {
-      color: #6366f1;
-      font-weight: 600;
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
   .submit-btn {
     display: flex;
     align-items: center;
@@ -194,7 +178,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s ease, transform 0.1s ease;
-    margin-top: 6px;
+    margin-top: 8px;
 
     &:hover:not(:disabled) {
       background: #4f46e5;
@@ -207,6 +191,23 @@
     &:disabled {
       opacity: 0.65;
       cursor: not-allowed;
+    }
+  }
+
+  .switch-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #64748b;
+
+    a {
+      color: #6366f1;
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }

@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.layout-main {
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+  background: var(--bg, #f1f5f9);
+}

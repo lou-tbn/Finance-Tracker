@@ -37,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category create(String name, CategoryType type){
 
-        if (repository.existsByName(name)) {
+        if (repository.existsByNameIgnoreCase(name)) {
             throw new CategoryNameAlreadyExistException(name);
         }
 
@@ -48,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category update(UUID id, String newName, CategoryType newType){
         Category category = getById(id);
-        if (repository.existsByName(newName) && !newName.equalsIgnoreCase(category.getName())) {
+        if (repository.existsByNameIgnoreCase(newName) && !newName.equalsIgnoreCase(category.getName())) {
             throw new CategoryNameAlreadyExistException(newName);
         }
         category.setName(newName);
@@ -61,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = getById(id);
 
         if(newName != null) {
-            if (repository.existsByName(newName) && !(newName.equalsIgnoreCase(category.getName()))) {
+            if (repository.existsByNameIgnoreCase(newName) && !(newName.equalsIgnoreCase(category.getName()))) {
                 throw new CategoryNameAlreadyExistException(newName);
             }
             else{

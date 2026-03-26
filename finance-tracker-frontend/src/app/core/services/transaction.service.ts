@@ -45,14 +45,23 @@ export class TransactionService {
   }
 
   create(payload: TransactionRequest): Observable<Transaction> {
-    return this.http.post<Transaction>(this.baseUrl, payload);
+    return this.http.post<Transaction>(this.baseUrl, this.normalizeDate(payload));
   }
 
   update(id: string, payload: TransactionRequest): Observable<Transaction> {
-    return this.http.put<Transaction>(`${this.baseUrl}/${id}`, payload);
+    return this.http.put<Transaction>(`${this.baseUrl}/${id}`, this.normalizeDate(payload));
+  }
+
+  private normalizeDate(payload: TransactionRequest): TransactionRequest {
+    const date = payload.date?.length === 16 ? payload.date + ':00' : payload.date;
+    return { ...payload, date };
   }
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  generateRecurring(userId: string): Observable<Transaction[]> {
+    return this.http.post<Transaction[]>(`${this.baseUrl}/generate-recurring/${userId}`, {});
   }
 }

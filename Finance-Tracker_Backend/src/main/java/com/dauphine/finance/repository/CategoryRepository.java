@@ -16,9 +16,5 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
             """)
     List<Category> findAllLikeName(@Param("name") String name);
 
-    @Query("""
-        Select Exists (Select c from Category c Where UPPER(c.name) = UPPER(:name))
-    """
-    )
-    boolean existsByName(@Param("name") String name);
+    boolean existsByNameIgnoreCase(String name);
 }

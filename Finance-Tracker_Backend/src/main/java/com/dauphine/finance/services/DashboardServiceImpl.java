@@ -9,6 +9,7 @@ import com.dauphine.finance.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -35,24 +36,29 @@ public class DashboardServiceImpl implements DashboardService {
         int effectiveMonth = month != null ? month : now.getMonthValue();
         int effectiveYear = year != null ? year : now.getYear();
 
-<<<<<<< HEAD
-        BigDecimal totalIncome = transactionRepository.sumIncomeByUserAndMonth(userId, month, year);
-        BigDecimal totalExpense = transactionRepository.sumExpenseByUserAndMonth(userId, month, year);
-=======
+
         BigDecimal totalIncome = transactionRepository.sumIncomeByUserAndMonth(userId, effectiveMonth, effectiveYear);
         BigDecimal totalExpense = transactionRepository.sumExpenseByUserAndMonth(userId, effectiveMonth, effectiveYear);
->>>>>>> a10df82 (Mise à jour)
 
         totalIncome = totalIncome != null ? totalIncome : BigDecimal.ZERO;
         totalExpense = totalExpense != null ? totalExpense : BigDecimal.ZERO;
 
-        BigDecimal balance = totalIncome.subtract(totalExpense);
+        // Solde cumulatif : toutes les transactions jusqu'à la fin du mois sélectionné
+        LocalDateTime endOfMonth = LocalDate.of(effectiveYear, effectiveMonth, 1)
+                .withDayOfMonth(LocalDate.of(effectiveYear, effectiveMonth, 1).lengthOfMonth())
+                .atTime(23, 59, 59);
 
-<<<<<<< HEAD
-        List<Object[]> rawExpenses = transactionRepository.sumExpensesByCategoryForUser(userId);
-=======
+        BigDecimal cumulativeIncome = transactionRepository.sumIncomeCumulativeByUser(userId, endOfMonth);
+        BigDecimal cumulativeExpense = transactionRepository.sumExpenseCumulativeByUser(userId, endOfMonth);
+
+        cumulativeIncome = cumulativeIncome != null ? cumulativeIncome : BigDecimal.ZERO;
+        cumulativeExpense = cumulativeExpense != null ? cumulativeExpense : BigDecimal.ZERO;
+
+        BigDecimal balance = cumulativeIncome.subtract(cumulativeExpense);
+
+
         List<Object[]> rawExpenses = transactionRepository.sumExpensesByCategoryForUserAndMonth(userId, effectiveMonth, effectiveYear);
->>>>>>> a10df82 (Mise à jour)
+
         List<DashboardResponse.CategoryExpense> expensesByCategory = rawExpenses.stream()
                 .map(row -> new DashboardResponse.CategoryExpense(
                         (String) row[0],

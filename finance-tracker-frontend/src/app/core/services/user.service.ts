@@ -18,4 +18,8 @@ export class UserService {
     }
     return this.http.get<User[]>(this.baseUrl, { params });
   }
+
+  create(username: string, email: string, password: string): Observable<User> {
+    return this.http.post<User>(this.baseUrl, { username, email, password });
+  }
 }

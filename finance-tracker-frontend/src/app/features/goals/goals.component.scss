@@ -148,3 +148,148 @@
     color: var(--text);
   }
 }
+
+/* ─── Bouton virement ────────────────────────────────────── */
+
+.btn-withdraw {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1.5px solid #10b981;
+  color: #10b981;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #10b981;
+    color: white;
+  }
+}
+
+.btn-transfer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1.5px solid #6366f1;
+  color: #6366f1;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #6366f1;
+    color: white;
+  }
+}
+
+/* ─── Modal virement ─────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-card {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #f1f5f9;
+
+  .modal-icon {
+    width: 42px;
+    height: 42px;
+    background: #eef2ff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6366f1;
+    flex-shrink: 0;
+
+    &.withdraw-icon {
+      background: #f0fdf4;
+      color: #10b981;
+    }
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 2px;
+  }
+
+  .modal-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+  }
+}
+
+.modal-body {
+  padding: 20px 24px;
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 6px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #1e293b;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+  }
+
+  .modal-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 8px 0 0;
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+}

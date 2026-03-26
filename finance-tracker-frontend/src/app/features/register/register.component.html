@@ -11,7 +11,7 @@
       </div>
       <h1>FinTrack</h1>
       <p class="brand-desc">
-        Pilote ton budget, catégorise tes transactions et suis tes objectifs d'épargne avec clarté.
+        Crée ton compte et commence à piloter tes finances dès aujourd'hui.
       </p>
       <ul class="feature-list">
         <li>Vue mensuelle claire de tes finances</li>
@@ -24,10 +24,23 @@
   <!-- Panneau droit : formulaire -->
   <div class="form-panel">
     <div class="form-card">
-      <h2>Connexion</h2>
-      <p class="form-subtitle">Accède à ton tableau de bord personnel</p>
+      <h2>Créer un compte</h2>
+      <p class="form-subtitle">Rejoins FinTrack et prends le contrôle de ton budget</p>
 
       <form (ngSubmit)="onSubmit()">
+
+        <div class="field">
+          <label for="username">Nom d'utilisateur</label>
+          <input
+            id="username"
+            type="text"
+            name="username"
+            [(ngModel)]="username"
+            placeholder="ex: johndoe"
+            required
+          />
+        </div>
+
         <div class="field">
           <label for="email">Email</label>
           <input
@@ -52,6 +65,18 @@
           />
         </div>
 
+        <div class="field">
+          <label for="confirmPassword">Confirmer le mot de passe</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            placeholder="••••••••"
+            required
+          />
+        </div>
+
         @if (error) {
           <div class="error-alert">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -64,14 +89,14 @@
         <button type="submit" class="submit-btn" [disabled]="loading">
           @if (loading) {
             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-            Connexion...
+            Création...
           } @else {
-            Se connecter
+            Créer mon compte
           }
         </button>
 
         <p class="switch-link">
-          Pas encore de compte ? <a routerLink="/register">Créer un compte</a>
+          Déjà un compte ? <a routerLink="/login">Se connecter</a>
         </p>
 
       </form>

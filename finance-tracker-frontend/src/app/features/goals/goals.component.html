@@ -162,6 +162,22 @@
               }
 
               <div class="goal-actions">
+                @if (getProgress(g) < 100) {
+                  <button class="btn btn-sm btn-transfer" (click)="openTransfer(g)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+                    </svg>
+                    Virer
+                  </button>
+                }
+                @if (g.currentAmount > 0) {
+                  <button class="btn btn-sm btn-withdraw" (click)="openWithdraw(g)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+                    </svg>
+                    Retirer
+                  </button>
+                }
                 <button class="btn btn-sm btn-outline-secondary" (click)="startEdit(g)">Modifier</button>
                 <button class="btn btn-sm btn-outline-danger" (click)="deleteGoal(g.id)">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -207,3 +223,80 @@
   }
 
 </div>
+
+<!-- Modal de retrait (objectif → solde) -->
+@if (withdrawGoalId) {
+  <div class="modal-overlay" (click)="cancelWithdraw()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon withdraw-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Retirer vers le solde</h3>
+          <p class="modal-subtitle">{{ withdrawGoalTitle }} — disponible : {{ withdrawGoalMax | number:'1.2-2' }} €</p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Montant à retirer (€) *</label>
+        <input
+          class="form-control"
+          type="number"
+          min="0.01"
+          step="0.01"
+          [max]="withdrawGoalMax"
+          [(ngModel)]="withdrawAmount"
+          name="withdrawAmount"
+          placeholder="ex: 50"
+        />
+        <p class="modal-hint">Le montant sera retiré de l'objectif et ajouté à ton solde.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="cancelWithdraw()">Annuler</button>
+        <button class="btn btn-success" (click)="confirmWithdraw()" [disabled]="!withdrawAmount || withdrawAmount <= 0 || withdrawAmount > withdrawGoalMax">
+          Confirmer le retrait
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal de virement -->
+@if (transferGoalId) {
+  <div class="modal-overlay" (click)="cancelTransfer()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Virer vers l'objectif</h3>
+          <p class="modal-subtitle">{{ transferGoalTitle }}</p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Montant à virer (€) *</label>
+        <input
+          class="form-control"
+          type="number"
+          min="0.01"
+          step="0.01"
+          [(ngModel)]="transferAmount"
+          name="transferAmount"
+          placeholder="ex: 100"
+        />
+        <p class="modal-hint">Le montant sera déduit de ton solde et ajouté à l'objectif.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="cancelTransfer()">Annuler</button>
+        <button class="btn btn-primary" (click)="confirmTransfer()" [disabled]="!transferAmount || transferAmount <= 0">
+          Confirmer le virement
+        </button>
+      </div>
+    </div>
+  </div>
+}

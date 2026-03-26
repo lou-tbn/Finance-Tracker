@@ -24,4 +24,8 @@ public interface GoalService {
     Goal patch(UUID id, UUID newUserID, String newTitle, BigDecimal newTargetAmount, BigDecimal newCurrentAmount, LocalDateTime newDeadline);
 
     void deleteById(UUID id);
+
+    Goal transfer(UUID goalId, UUID userId, BigDecimal amount);
+
+    Goal withdraw(UUID goalId, UUID userId, BigDecimal amount);
 }

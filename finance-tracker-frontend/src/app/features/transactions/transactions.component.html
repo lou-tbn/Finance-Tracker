@@ -13,6 +13,13 @@
         </svg>
         Filtres
       </button>
+      <button class="btn btn-outline-primary" (click)="generateRecurring()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Générer récurrentes
+      </button>
       <button class="btn btn-primary" (click)="showAddForm = !showAddForm">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -67,7 +74,7 @@
       <form class="row g-2" (ngSubmit)="createTransaction()">
         <div class="col-12 col-md-2">
           <label class="form-label">Type *</label>
-          <select class="form-select" [(ngModel)]="form.transactionType" name="createType">
+          <select class="form-select" [(ngModel)]="form.transactionType" name="createType" (ngModelChange)="form.categoryId = ''">
             <option value="INCOME">Revenu</option>
             <option value="EXPENSE">Dépense</option>
           </select>
@@ -76,7 +83,7 @@
           <label class="form-label">Catégorie</label>
           <select class="form-select" [(ngModel)]="form.categoryId" name="createCategoryId">
             <option value="">Aucune</option>
-            @for (c of categories; track c.id) {
+            @for (c of filteredCategoriesForCreate; track c.id) {
               <option [value]="c.id">{{ c.name }}</option>
             }
           </select>
@@ -226,7 +233,7 @@
                       <div class="row g-2">
                         <div class="col-12 col-md-2">
                           <label class="form-label">Type</label>
-                          <select class="form-select" [(ngModel)]="editForm.transactionType" name="editType">
+                          <select class="form-select" [(ngModel)]="editForm.transactionType" name="editType" (ngModelChange)="editForm.categoryId = ''">
                             <option value="INCOME">Revenu</option>
                             <option value="EXPENSE">Dépense</option>
                           </select>
@@ -235,7 +242,7 @@
                           <label class="form-label">Catégorie</label>
                           <select class="form-select" [(ngModel)]="editForm.categoryId" name="editCategoryId">
                             <option value="">Aucune</option>
-                            @for (c of categories; track c.id) {
+                            @for (c of filteredCategoriesForEdit; track c.id) {
                               <option [value]="c.id">{{ c.name }}</option>
                             }
                           </select>

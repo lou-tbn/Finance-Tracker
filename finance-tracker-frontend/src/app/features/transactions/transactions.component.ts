@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Category } from '../../core/models/category.model';
 import {
@@ -13,7 +13,7 @@ import { CategoryService } from '../../core/services/category.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-transactions',
@@ -22,12 +22,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   templateUrl: './transactions.component.html',
   styleUrl: './transactions.component.scss',
 })
-export class TransactionsComponent implements OnInit {
+export class TransactionsComponent implements OnInit, OnDestroy {
   private readonly transactionService = inject(TransactionService);
   private readonly categoryService = inject(CategoryService);
   private readonly authService = inject(AuthService);
   private readonly alertService = inject(AlertService);
-  private readonly destroyRef = inject(DestroyRef);
+
+  private sub?: Subscription;
 
   loading = false;
   error: string | null = null;
@@ -85,17 +86,15 @@ export class TransactionsComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.authService.currentUser$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((user) => {
-        const activeUserId = user?.id ?? '';
-        this.filterUserId = activeUserId;
-        this.form.userId = activeUserId;
-        if (activeUserId) {
-          this.loadTransactions();
-        }
-      });
+    const userId = this.authService.getCurrentUserId() ?? '';
+    this.filterUserId = userId;
+    this.form.userId = userId;
     this.loadCategories();
+    this.loadTransactions();
+  }
+
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
   }
 
   loadCategories(): void {
@@ -106,21 +105,20 @@ export class TransactionsComponent implements OnInit {
   }
 
   loadTransactions(): void {
-    const effectiveUserId = (this.filterUserId || this.authService.getCurrentUserId() || '').trim();
-    if (!effectiveUserId) {
+    const userId = (this.filterUserId || this.authService.getCurrentUserId() || '').trim();
+    if (!userId) {
       this.transactions = [];
       this.error = 'Aucun utilisateur actif. Reconnecte-toi.';
       this.loading = false;
       return;
     }
-
-    this.filterUserId = effectiveUserId;
-    this.form.userId = effectiveUserId;
+    this.filterUserId = userId;
+    this.form.userId = userId;
     this.loading = true;
     this.error = null;
 
     const filters: TransactionFilters = {
-      userId: effectiveUserId,
+      userId,
       categoryId: this.filterCategoryId || undefined,
       start: this.filterStart || undefined,
       end: this.filterEnd || undefined,
@@ -130,7 +128,8 @@ export class TransactionsComponent implements OnInit {
       search: this.filterSearch || undefined,
     };
 
-    this.transactionService.getAll(filters).subscribe({
+    this.sub?.unsubscribe();
+    this.sub = this.transactionService.getAll(filters).subscribe({
       next: (data) => {
         this.transactions = data;
         this.loading = false;
@@ -147,14 +146,13 @@ export class TransactionsComponent implements OnInit {
   }
 
   createTransaction(): void {
-    const effectiveUserId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
-    if (!effectiveUserId || !this.form.amount || !this.form.date) {
+    const userId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
+    if (!userId || !this.form.amount || !this.form.date) {
       this.error = 'Montant, date et utilisateur connecté sont obligatoires.';
       return;
     }
-
     const payload: TransactionRequest = {
-      userId: effectiveUserId,
+      userId,
       categoryId: this.form.categoryId || null,
       amount: this.form.amount,
       date: this.form.date,
@@ -162,7 +160,6 @@ export class TransactionsComponent implements OnInit {
       description: this.form.description || null,
       transactionType: this.form.transactionType,
     };
-
     this.transactionService.create(payload).subscribe({
       next: () => {
         this.form.amount = null;
@@ -178,9 +175,7 @@ export class TransactionsComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.error =
-          typeof err?.error === 'string'
-            ? `Échec : ${err.error}`
-            : 'Échec de création de la transaction.';
+          typeof err?.error === 'string' ? `Échec : ${err.error}` : 'Échec de création.';
         this.alertService.error(this.error ?? '');
       },
     });
@@ -204,13 +199,13 @@ export class TransactionsComponent implements OnInit {
 
   saveEdit(): void {
     if (!this.editId) return;
-    const effectiveUserId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
-    if (!effectiveUserId || !this.editForm.amount || !this.editForm.date) {
+    const userId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
+    if (!userId || !this.editForm.amount || !this.editForm.date) {
       this.error = 'Montant, date et utilisateur connecté sont obligatoires.';
       return;
     }
     const payload: TransactionRequest = {
-      userId: effectiveUserId,
+      userId,
       categoryId: this.editForm.categoryId || null,
       amount: this.editForm.amount,
       date: this.editForm.date,
@@ -227,9 +222,7 @@ export class TransactionsComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.error =
-          typeof err?.error === 'string'
-            ? `Échec de modification : ${err.error}`
-            : 'Échec de modification de la transaction.';
+          typeof err?.error === 'string' ? `Échec : ${err.error}` : 'Échec de modification.';
         this.alertService.error(this.error ?? '');
       },
     });
@@ -243,10 +236,23 @@ export class TransactionsComponent implements OnInit {
         this.alertService.success('Transaction supprimée.');
         this.loadTransactions();
       },
-      error: (err) => {
-        console.error(err);
-        this.alertService.error('Échec de suppression.');
+      error: () => this.alertService.error('Échec de suppression.'),
+    });
+  }
+
+  generateRecurring(): void {
+    const userId = this.authService.getCurrentUserId() ?? '';
+    if (!userId) return;
+    this.transactionService.generateRecurring(userId).subscribe({
+      next: (generated) => {
+        if (generated.length === 0) {
+          this.alertService.success('Aucune nouvelle transaction à générer (déjà fait ce mois-ci).');
+        } else {
+          this.alertService.success(`${generated.length} transaction(s) récurrente(s) générée(s).`);
+        }
+        this.loadTransactions();
       },
+      error: () => this.alertService.error('Échec de la génération des transactions récurrentes.'),
     });
   }
 
@@ -265,6 +271,14 @@ export class TransactionsComponent implements OnInit {
     const date = new Date(value);
     const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 16);
+  }
+
+  get filteredCategoriesForCreate(): typeof this.categories {
+    return this.categories.filter(c => c.categoryType === this.form.transactionType);
+  }
+
+  get filteredCategoriesForEdit(): typeof this.categories {
+    return this.categories.filter(c => c.categoryType === this.editForm.transactionType);
   }
 
   get totalIncome(): number {

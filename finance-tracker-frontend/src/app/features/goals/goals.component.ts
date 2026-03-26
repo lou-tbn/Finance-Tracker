@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Goal, GoalRequest } from '../../core/models/goal.model';
 import { GoalService } from '../../core/services/goal.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-goals',
@@ -14,11 +14,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   templateUrl: './goals.component.html',
   styleUrl: './goals.component.scss',
 })
-export class GoalsComponent implements OnInit {
+export class GoalsComponent implements OnInit, OnDestroy {
   private readonly goalService = inject(GoalService);
   private readonly authService = inject(AuthService);
   private readonly alertService = inject(AlertService);
-  private readonly destroyRef = inject(DestroyRef);
+
+  private sub?: Subscription;
 
   loading = false;
   error: string | null = null;
@@ -42,6 +43,15 @@ export class GoalsComponent implements OnInit {
     deadline: string;
   } = { userId: '', title: '', targetAmount: null, currentAmount: 0, deadline: '' };
 
+  transferGoalId: string | null = null;
+  transferGoalTitle = '';
+  transferAmount: number | null = null;
+
+  withdrawGoalId: string | null = null;
+  withdrawGoalTitle = '';
+  withdrawGoalMax = 0;
+  withdrawAmount: number | null = null;
+
   editId: string | null = null;
   editForm: {
     title: string;
@@ -51,16 +61,14 @@ export class GoalsComponent implements OnInit {
   } = { title: '', targetAmount: null, currentAmount: 0, deadline: '' };
 
   ngOnInit(): void {
-    this.authService.currentUser$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((user) => {
-        const activeUserId = user?.id ?? '';
-        this.filterUserId = activeUserId;
-        this.form.userId = activeUserId;
-        if (activeUserId) {
-          this.loadGoals();
-        }
-      });
+    const userId = this.authService.getCurrentUserId() ?? '';
+    this.filterUserId = userId;
+    this.form.userId = userId;
+    this.loadGoals();
+  }
+
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
   }
 
   loadGoals(): void {
@@ -70,7 +78,8 @@ export class GoalsComponent implements OnInit {
 
     this.loading = true;
     this.error = null;
-    this.goalService
+    this.sub?.unsubscribe();
+    this.sub = this.goalService
       .getAll(effectiveUserId || undefined, this.filterTitle || undefined)
       .subscribe({
         next: (data) => {
@@ -169,6 +178,61 @@ export class GoalsComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.alertService.error('Échec de suppression.');
+      },
+    });
+  }
+
+  openTransfer(goal: Goal): void {
+    this.transferGoalId = goal.id;
+    this.transferGoalTitle = goal.title;
+    this.transferAmount = null;
+  }
+
+  cancelTransfer(): void {
+    this.transferGoalId = null;
+    this.transferAmount = null;
+  }
+
+  confirmTransfer(): void {
+    if (!this.transferGoalId || !this.transferAmount || this.transferAmount <= 0) return;
+    const userId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
+    this.goalService.transfer(this.transferGoalId, userId, this.transferAmount).subscribe({
+      next: () => {
+        this.alertService.success(`${this.transferAmount} € virés vers "${this.transferGoalTitle}".`);
+        this.cancelTransfer();
+        this.loadGoals();
+      },
+      error: (err) => {
+        const msg = typeof err?.error === 'string' ? err.error : 'Virement échoué.';
+        this.alertService.error(msg);
+      },
+    });
+  }
+
+  openWithdraw(goal: Goal): void {
+    this.withdrawGoalId = goal.id;
+    this.withdrawGoalTitle = goal.title;
+    this.withdrawGoalMax = goal.currentAmount;
+    this.withdrawAmount = null;
+  }
+
+  cancelWithdraw(): void {
+    this.withdrawGoalId = null;
+    this.withdrawAmount = null;
+  }
+
+  confirmWithdraw(): void {
+    if (!this.withdrawGoalId || !this.withdrawAmount || this.withdrawAmount <= 0) return;
+    const userId = (this.form.userId || this.authService.getCurrentUserId() || '').trim();
+    this.goalService.withdraw(this.withdrawGoalId, userId, this.withdrawAmount).subscribe({
+      next: () => {
+        this.alertService.success(`${this.withdrawAmount} € retirés depuis "${this.withdrawGoalTitle}" vers ton solde.`);
+        this.cancelWithdraw();
+        this.loadGoals();
+      },
+      error: (err) => {
+        const msg = typeof err?.error === 'string' ? err.error : 'Retrait échoué.';
+        this.alertService.error(msg);
       },
     });
   }

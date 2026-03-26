@@ -33,4 +33,12 @@ export class GoalService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  transfer(goalId: string, userId: string, amount: number): Observable<Goal> {
+    return this.http.post<Goal>(`${this.baseUrl}/${goalId}/transfer`, { userId, amount });
+  }
+
+  withdraw(goalId: string, userId: string, amount: number): Observable<Goal> {
+    return this.http.post<Goal>(`${this.baseUrl}/${goalId}/withdraw`, { userId, amount });
+  }
 }

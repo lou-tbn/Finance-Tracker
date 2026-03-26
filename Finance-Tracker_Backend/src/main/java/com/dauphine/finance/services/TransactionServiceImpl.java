@@ -175,6 +175,13 @@ public class TransactionServiceImpl implements TransactionService {
         if (categoryId != null) {
             category = categoryRepository.findById(categoryId)
                     .orElseThrow(() -> new CategoryNotFoundByIdException(categoryId));
+            if (!category.getCategoryType().name().equals(transactionType.name())) {
+                throw new IllegalArgumentException(
+                    "La catégorie \"" + category.getName() + "\" est de type " +
+                    category.getCategoryType() + " et ne peut pas être utilisée pour une transaction " +
+                    transactionType + "."
+                );
+            }
         }
 
         Transaction transaction = new Transaction(user, amount, date, frequency, description, transactionType);
@@ -193,6 +200,13 @@ public class TransactionServiceImpl implements TransactionService {
         if (newCategoryId != null) {
             Category category = categoryRepository.findById(newCategoryId)
                     .orElseThrow(() -> new CategoryNotFoundByIdException(newCategoryId));
+            if (!category.getCategoryType().name().equals(newTransactionType.name())) {
+                throw new IllegalArgumentException(
+                    "La catégorie \"" + category.getName() + "\" est de type " +
+                    category.getCategoryType() + " et ne peut pas être utilisée pour une transaction " +
+                    newTransactionType + "."
+                );
+            }
             transaction.setCategory(category);
         } else {
             transaction.setCategory(null);
