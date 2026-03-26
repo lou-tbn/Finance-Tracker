@@ -8,7 +8,7 @@ L’application *Personal Finance Tracker* permet aux utilisateurs de suivre leu
 
 **Contenu du repository**  
 - `rapport.pdf` : rapport détaillé du projet avec architecture, modèle de données, fonctionnalités et feedback sur le cours.  
-- `database.sql` : script SQL pour créer la base de données PostgreSQL utilisée, hébergée sur Supabase.  
+- `Creation_BD.sql` : script SQL pour créer la base de données PostgreSQL utilisée, hébergée sur Supabase.  
 - `finance-tracker_frontend/` : dossier contenant le code source du frontend Angular.  
 - `Finance-Tracker_Backend/` : dossier contenant le code source du backend Spring Boot.  
 
@@ -33,7 +33,7 @@ The *Personal Finance Tracker* application allows users to track their income, e
 
 **Repository contents**  
 - `rapport.pdf` : detailed project report including architecture, database model, features, and course feedback.  
-- `database.sql` : SQL script to create the PostgreSQL database used, hosted on Supabase.  
+- `Creation_BD.sql` : SQL script to create the PostgreSQL database used, hosted on Supabase.  
 - `finance-tracker_frontend/` : folder containing the Angular frontend source code.  
 - `Finance-Tracker_Backend/` : folder containing the Spring Boot backend source code.  
 
